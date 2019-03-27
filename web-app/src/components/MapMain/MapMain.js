@@ -1,6 +1,6 @@
-import React from 'react';
-import DeckGL, {LineLayer} from 'deck.gl';
-import {StaticMap} from 'react-map-gl';
+import React from 'react'
+import DeckGL, {LineLayer} from 'deck.gl'
+import {StaticMap} from 'react-map-gl'
 // Set your mapbox access token here
 const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1Ijoia2F1bmlsLWRocnV2IiwiYSI6ImNqdHA3djZhYTAxdmw0YXJ2Nm9nZWZpdTMifQ.i2khisdjFR-fPCZ421loYg';
 
@@ -30,15 +30,16 @@ class MapMain extends React.Component{
         targetPosition: [-122.41669, 37.781]
       }
     ];
-
     var layers = [
       new LineLayer({id: 'line-layer', data})
     ];
+
     this.setState({layers: layers});
   }
 
   render(){
     return(
+      
       <DeckGL
         initialViewState={initialViewState}
         controller={true}
