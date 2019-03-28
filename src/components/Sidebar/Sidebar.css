@@ -8,7 +8,9 @@
 
 .tabContainer{
   padding: 10px;
+  /*
   background-color: rgb(36, 39, 48);
+  */
   height: auto;
   display: block;
   visibility: visible;
@@ -21,4 +23,32 @@
 
 h1 {
   font-weight: 100px;
+}
+
+.clear{
+  clear: both;
+}
+
+.space {
+  margin-bottom: 10px;
+  padding-top: 10px;
+}
+
+.rect {
+  border-radius: 0px;
+  margin: 20px 0px;
+}
+
+.dividerBorder {
+  padding: 0px;
+  margin: 0px 0px;
+  border-bottom: 1px solid #3A414C;
+}
+
+
+.centerOverlay{
+  width: 400px;
+  top: 0px;
+  margin-top: 10vh;
+  left: calc(-200px + 50%);
 }

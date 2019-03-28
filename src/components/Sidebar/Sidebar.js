@@ -1,10 +1,8 @@
 import React from 'react'
 import {
-  Tab,
-  Tabs,
   ButtonGroup,
   Button,
-  AnchorButton
+  Divider
 } from "@blueprintjs/core";
 
 import './Sidebar.css'
@@ -15,10 +13,12 @@ class Sidebar extends React.Component {
     super(props)
     this.state = {
       layersIsVisible: true,
-      filtersIsVisible: false
+      filtersIsVisible: false,
+      addTrackerIsVisible: false
     }
 
     this.toggleLayers = this.toggleLayers.bind(this)
+    this.handleTrackerAdd = this.handleTrackerAdd.bind(this)
   }
 
   toggleLayers() {
@@ -29,6 +29,14 @@ class Sidebar extends React.Component {
 
     })
   }
+
+  handleTrackerAdd() {
+    var addTrackerVisibility = this.state.addTrackerIsVisible
+    this.setState({
+      addTrackerIsVisible: !addTrackerVisibility
+    })
+  }
+
   render() {
     return (
       <div className="Sidebar">
@@ -46,17 +54,22 @@ class Sidebar extends React.Component {
             <Button onClick={this.toggleLayers} icon="filter" />
           </ButtonGroup>
         </div>
+        // tracker tab
         <div
           className={this.state.layersIsVisible ? "tabContainer" : "tabContainer  tabVisible"}
         >
-          <h1 class="bp3-dark bp3-heading">Layers</h1>
+
+          <h3 class="bp3-dark bp3-heading">Layers</h3>
+          <Button onClick={this.props.showTrackerFormCallback} intent="primary" className="rect" icon="plus"  text="Add Tracker"/>
+          <Divider className="dividerBorder"/>
+
         </div>
 
-
+        // filters tab
         <div
           className={this.state.layersIsVisible ? "tabContainer tabVisible" : "tabContainer "}
         >
-          <h1 class="bp3-dark bp3-heading">Filters</h1>
+          <h3 class="bp3-dark bp3-heading">Filters</h3>
         </div>
 
       </div>
