@@ -9,6 +9,8 @@
   "author": "Bhalchandra",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.16.4"
+    "express": "^4.16.4",
+    "moment": "^2.24.0",
+    "mongoose": "^5.4.22"
   }
 }
