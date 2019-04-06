@@ -1,10 +1,33 @@
 require('./db/mongoose/mongoose')
 const express = require('express')
+const moment = require('moment')
 const NycData = require('./models/nycdata')
 
 const app = express()
+const port = process.env.PORT || 3000
+app.listen(port, ()=>{
+    console.log('Server is up on Port '+port)
+})
 
-const model = NycData('2018','6')
-model.countDocuments({PULocationID:'230'}, (err, count)=> {
-    console.log('there are %d jungle adventures', count);
-});
+
+app.get('/getcountday/:date', async (req, res)=>{
+    date = moment(req.params.date)
+    model = NycData(date.format('YYYY'), date.format('MM'))
+    try {
+        const count = await model.countDocuments({tpep_pickup_datetime:{$regex : ".*"+req.params.date+".*"}}, (error, result)=>{
+            if(result){
+                res.status(201).send({
+                    count:result,
+                    date:date
+                })
+            }else{
+                res.status(404).send({
+                    error:"Data doesn't exist! "
+                })
+            }
+        })
+    } catch (error) {
+        console.log('error occured')
+        res.status(500).send(error)
+    }
+})
