@@ -23,10 +23,10 @@ const NycData = (year, month)=>{
             type:String
         },
         PULocationID:{
-            type:Number
+            type:String
         },
         DOLocationID:{
-            type:Number
+            type:String
         },
         payment_type:{
             type:Number
