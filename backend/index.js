@@ -2,6 +2,9 @@ require('./db/mongoose/mongoose')
 const express = require('express')
 const moment = require('moment')
 const NycData = require('./models/nycdata')
+const apiKey = require('./api-key')
+const apiUrls = require('./api-url')
+const request = require('request')
 
 const app = express()
 const port = process.env.PORT || 3000
@@ -52,6 +55,32 @@ app.get('/getzonepickups/:date/:pu_id/:du_id', async (req, res)=>{
     } catch (error) {
         res.status(500).send({
             error:'An Error occured!'
+        })
+    }
+})
+
+
+app.get('/getwaypoints/:from_long/:from_lat/:to_long/:to_lat', async (req, res)=>{
+    const _url = apiUrls.waypointsURL(req.params.from_long, req.params.from_lat, req.params.to_long, req.params.to_lat, apiKey.waypoints())
+    try {
+        request({url:_url, json:true}, (error, response)=>{
+            if(error){
+                res.status(500).send({
+                    message:'Service Unavailable'
+                })
+            }else if(response.body.code==400){
+                res.status(400).send({
+                    message:'Invalid Arguments provided!'
+                })
+            }else{
+                res.status(400).send({
+                    route:response.body
+                })
+            }
+        })    
+    } catch (error) {
+        res.status(500).send({
+            error: 'An error occuered!'
         })
     }
 })
