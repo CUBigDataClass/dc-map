@@ -2,15 +2,15 @@
 import React from 'react';
 import MapMain from './components/MapMain'
 import Sidebar from './components/Sidebar'
-import classNames from "classnames"
-
 import {
   Overlay,
   Classes,
-  Card, Elevation, Button
+  Card, Button
 } from "@blueprintjs/core";
 
 import './App.css'
+
+const googleTrends = require('google-trends-api')
 
 class App extends React.Component {
 
@@ -22,6 +22,14 @@ class App extends React.Component {
 
     this.showTrackerFormCallback = this.showTrackerFormCallback.bind(this)
     this.handleTrackerFormClose = this.handleTrackerFormClose.bind(this)
+
+    googleTrends.interestOverTime({keyword: 'Valentines Day'})
+    .then(function(results){
+      console.log(results);
+    })
+    .catch(function(err){
+      console.error(err);
+    });
   }
 
   showTrackerFormCallback() {
@@ -62,7 +70,7 @@ class App extends React.Component {
             interactive={true}
             className="centerOverlay bp3-dark"
           >
-            <h5><a href="#">Card heading</a></h5>
+            <h5><a>Card heading</a></h5>
             <p>Card content</p>
             <Button>Submit</Button>
           </Card>

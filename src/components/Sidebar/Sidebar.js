@@ -5,8 +5,8 @@ import {
   Divider
 } from "@blueprintjs/core";
 
+import { DateInput } from "@blueprintjs/datetime";
 import './Sidebar.css'
-
 class Sidebar extends React.Component {
 
   constructor(props){
@@ -54,22 +54,43 @@ class Sidebar extends React.Component {
             <Button onClick={this.toggleLayers} icon="filter" />
           </ButtonGroup>
         </div>
+        {
         // tracker tab
+        }
         <div
           className={this.state.layersIsVisible ? "tabContainer" : "tabContainer  tabVisible"}
         >
 
-          <h3 class="bp3-dark bp3-heading">Layers</h3>
+          <h3 className="bp3-dark bp3-heading">Layers</h3>
           <Button onClick={this.props.showTrackerFormCallback} intent="primary" className="rect" icon="plus"  text="Add Tracker"/>
           <Divider className="dividerBorder"/>
 
         </div>
 
-        // filters tab
+        {
+          // filters tab
+        }
         <div
           className={this.state.layersIsVisible ? "tabContainer tabVisible" : "tabContainer "}
         >
-          <h3 class="bp3-dark bp3-heading">Filters</h3>
+          <h3 className="bp3-dark bp3-heading">Filters</h3>
+
+          <DateInput
+              className="bp3-dark"
+              formatDate={date => date.toLocaleString()}
+              onChange={this.handleDateChange}
+              parseDate={str => new Date(str)}
+              placeholder={"M/D/YYYY"}
+              value={this.state.date}
+          />
+          <DateInput
+              className="bp3-dark"
+              formatDate={date => date.toLocaleString()}
+              onChange={this.handleDateChange}
+              parseDate={str => new Date(str)}
+              placeholder={"M/D/YYYY"}
+              value={this.state.date}
+          />
         </div>
 
       </div>
