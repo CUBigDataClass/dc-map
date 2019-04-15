@@ -1,5 +1,4 @@
-import React, { Fragment } from 'react'
-import ReactDOM from 'react-dom';
+import React from 'react'
 
 import {
   ButtonGroup,
@@ -202,7 +201,6 @@ class Sidebar extends React.Component {
           <div className="filter-item-contanier">
             {
               filters.map((filter, idx) => {
-                if(filter.range){
                   return(
                     <Card className="bp3-dark margin-top" interactive={true} elevation={Elevation.TWO}>
                       <Tag
@@ -225,7 +223,7 @@ class Sidebar extends React.Component {
                       />
                     </Card>
                   )
-                }
+                
               })
             }
           </div>

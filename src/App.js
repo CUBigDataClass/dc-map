@@ -10,8 +10,6 @@ import {
 
 import './App.css'
 
-const googleTrends = require('google-trends-api')
-
 class App extends React.Component {
 
   constructor(props) {
@@ -22,14 +20,6 @@ class App extends React.Component {
 
     this.showTrackerFormCallback = this.showTrackerFormCallback.bind(this)
     this.handleTrackerFormClose = this.handleTrackerFormClose.bind(this)
-
-    googleTrends.interestOverTime({keyword: 'Valentines Day'})
-    .then(function(results){
-      console.log(results);
-    })
-    .catch(function(err){
-      console.error(err);
-    });
   }
 
   showTrackerFormCallback() {
@@ -70,7 +60,7 @@ class App extends React.Component {
             interactive={true}
             className="centerOverlay bp3-dark"
           >
-            <h5><a>Card heading</a></h5>
+            <h5><a href="http://google.com">Card heading</a></h5>
             <p>Card content</p>
             <Button>Submit</Button>
           </Card>
