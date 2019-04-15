@@ -52,3 +52,32 @@ h1 {
   margin-top: 10vh;
   left: calc(-200px + 50%);
 }
+
+.filter-item-contanier {
+  width: 100%;
+  padding:10px 0px;
+  height: 100px;
+  background: #182026;
+}
+
+
+.filter-trigger-button {
+  width: 100%;
+  height: auto;
+  padding: 8px 4px;
+  border-radius: 5px;
+  background: #ff88aa;
+}
+
+.margin-top{
+  margin-top: 10px;
+}
+
+
+.float-left-top{
+  margin-bottom: 20px;
+}
+
+.range-slider-style{
+  padding: 5px;
+}

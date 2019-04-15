@@ -3,12 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@blueprintjs/core": "^3.14.1",
+    "@blueprintjs/core": "^3.15.1",
     "@blueprintjs/datetime": "^3.9.0",
     "@blueprintjs/docs-theme": "^3.1.0",
+    "@blueprintjs/icons": "^3.8.0",
     "deck.gl": "^6.4.7",
     "google-trends-api": "^4.9.0",
+    "rc-slider": "^8.6.9",
     "react": "^16.8.5",
+    "react-compound-slider": "^1.2.1",
     "react-dom": "^16.8.5",
     "react-map-gl": "^4.1.1",
     "react-scripts": "2.1.8"
