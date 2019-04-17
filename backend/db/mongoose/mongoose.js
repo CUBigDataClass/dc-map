@@ -1,6 +1,7 @@
-const  mongoose = require('mongoose')
+const mongoose = require('mongoose')
+const process = require('process')
 
-mongoose.connect('mongodb://127.0.0.1:27017/nycdata',{
+mongoose.connect(process.env.MONGODB_URI,{
     useNewUrlParser:true,
     useCreateIndex:true
 })
