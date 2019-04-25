@@ -5,5 +5,5 @@ const waypoints = ()=>{
 }
 
 module.exports = {
-    waypoints:waypoints
+    waypoints:waypoints,
 }
