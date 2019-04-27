@@ -145,3 +145,28 @@ app.get('/getrandomtaxirides/:date', async (req, res)=>{
         })
     }
 })
+
+
+app.get('/operationalcabs/:date', async(req, res)=>{
+    date = moment(req.params.date)
+    const period = moment({year:date.format('YYYY'), month:date.format('MM')-1}).format('YYYY-MM')
+    NycLicMedals.find({date:{
+        $regex : ".*"+period+".*"
+    }}).select({
+        operational_licenses:1,
+        operational_medals:1,
+        date:1,
+        _id:false
+    }).sort('date').lean().then((results)=>{
+        res.send({
+            msg:'Success!',
+            period:period,
+            results:results
+        })
+    }).catch((error)=>{
+        res.status(500).send({
+            msg:'The request failed! Cannot read the database',
+            error:error
+        })
+    })
+})
