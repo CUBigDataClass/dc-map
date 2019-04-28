@@ -1,5 +1,5 @@
 runtime: nodejs10
 
 env_variables:
-  MONGODB_URI: 'mongodb://34.66.182.231:27017/nycdata'
+  MONGODB_URI: "mongodb://root:MeltanAteMySp00ns@34.66.182.231:27017/nycdata"
   API_KEY_MAPBOX: 'pk.eyJ1IjoiYm5haWsyNjExIiwiYSI6ImNqdDNsOTFpNDB2aW40OXBnamtlYnRzOGUifQ.wu8BxADFpu4VHpGsSJIAgg'
