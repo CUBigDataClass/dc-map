@@ -15,6 +15,8 @@ import {
 
 } from "@blueprintjs/core"
 
+import {requests} from '../../requests.js'
+
 import './Sidebar.css'
 
 class Sidebar extends React.Component {
@@ -114,6 +116,9 @@ class Sidebar extends React.Component {
     this.setState({ values })
   }
 
+  componentDidMount(){
+    requests.getWaypoints(-73.989, 40.733, -74, 40.733)
+  }
 
   toggleLayers() {
     var layersIsVisible = !this.state.layersIsVisible
@@ -223,7 +228,7 @@ class Sidebar extends React.Component {
                       />
                     </Card>
                   )
-                
+
               })
             }
           </div>
