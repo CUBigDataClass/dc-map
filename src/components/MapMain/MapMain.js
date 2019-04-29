@@ -25,10 +25,6 @@ class MapMain extends React.Component{
 
   componentDidMount(){
     var data = [
-      {
-        sourcePosition: [-122.41669, 37.7853],
-        targetPosition: [-122.41669, 37.781]
-      }
     ];
     var layers = [
       new LineLayer({id: 'line-layer', data})
@@ -39,7 +35,7 @@ class MapMain extends React.Component{
 
   render(){
     return(
-      
+
       <DeckGL
         initialViewState={initialViewState}
         controller={true}

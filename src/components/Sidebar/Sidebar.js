@@ -125,7 +125,6 @@ class Sidebar extends React.Component {
     this.setState({
       layersIsVisible: layersIsVisible,
       filtersIsVisible: !layersIsVisible,
-
     })
   }
 
@@ -175,11 +174,17 @@ class Sidebar extends React.Component {
         // tracker tab
         }
         <div
-          className={this.state.layersIsVisible ? "tabContainer" : "tabContainer  tabVisible"}
+          className={
+            this.state.layersIsVisible ? "tabContainer" : "tabContainer  tabVisible"
+          }
         >
 
           <h3 className="bp3-dark bp3-heading">Layers</h3>
-          <Button onClick={this.props.showTrackerFormCallback} intent="primary" className="rect" icon="plus"  text="Add Tracker"/>
+          <Button
+            onClick={this.props.showTrackerFormCallback}
+            intent="primary" className="rect" icon="plus"
+            text="Add Tracker"
+            />
           <Divider className="dividerBorder"/>
 
         </div>
@@ -195,7 +200,10 @@ class Sidebar extends React.Component {
             <Menu>
             {
               this.availableFilters.map((filter, idx) =>{
-                return <MenuItem icon="graph" text={filter.text} onClick={()=>this.handleFilterItemClick(idx)} />
+                return <MenuItem
+                  icon="graph" text={filter.text}
+                  onClick={()=>this.handleFilterItemClick(idx)}
+                />
               })
             }
           </Menu>

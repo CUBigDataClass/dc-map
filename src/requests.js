@@ -8,7 +8,7 @@ class Request {
       dcMapConfig.getApi() +
       'getwaypoints/' + from_lon + '/' + from_lat + '/' + to_lon + '/' + to_lat
     ).then( (response) => {
-      console.log("response", response)
+      console.log(response)
       })
       .catch( (error) => {
         console.log(error)
