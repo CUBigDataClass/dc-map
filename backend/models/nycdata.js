@@ -2,6 +2,9 @@ const mongoose = require('mongoose')
 const periods = require('./periods')['periodsNyc']
 
 const NycDataSchema = {
+    VendorID:{
+        type:Number
+    },
     tpep_pickup_datetime:{
         type:String
     },
@@ -21,10 +24,10 @@ const NycDataSchema = {
         type:String
     },
     PULocationID:{
-        type:String
+        type:Number
     },
     DOLocationID:{
-        type:String
+        type:Number
     },
     payment_type:{
         type:Number
@@ -49,6 +52,9 @@ const NycDataSchema = {
     },
     total_amount:{
         type:Number
+    },
+    ride_date:{
+        type:String
     }
 }
 
