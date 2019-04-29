@@ -22,24 +22,29 @@ app.listen(port, ()=>{
 })
 
 
-app.get('/getcountday/:date', async (req, res, next)=>{
-    date = moment(req.params.date)
+app.get('/getcountday/:fromdatetime/:todatetime', async (req, res, next)=>{
+    const fromdatetime = req.params.fromdatetime
+    const todatetime = req.params.todatetime
+    const date = moment(req.params.fromdatetime)
     const period = moment({year:date.format('YYYY'), month:date.format('MM')-1}).format('YYYY-MM')
+    const ride_date = date.format('YYYY-MM-DD')
     try {
-        const count = await NycData[period].countDocuments({tpep_pickup_datetime:{$regex : ".*"+req.params.date+".*"}}, (error, result)=>{
-            if(result){
-                res.status(201).json({
-                    count:result,
-                    date:date
-                })
-            }else{
-                res.status(404).json({
-                    error:"Data doesn't exist! "
-                })
-            }
+        NycData[period].aggregate([
+            {$match:{ride_date:ride_date, tpep_pickup_datetime:{$gte:fromdatetime,$lt:todatetime}}},
+            {$group :{_id : "$PULocationID", rides:{$sum:1}}},
+            {$sort:{"_id":1}}
+        ]).then((result)=>{
+            res.status(201).send({
+                msg:'Success!',
+                results:result
+            })
+        }).catch((error)=>{
+            res.status(500).send({
+                msg:'An error occured!',
+                error:error
+            })
         })
     } catch (error) {
-        console.log('error occured')
         res.status(500).json(error)
     }
 })
