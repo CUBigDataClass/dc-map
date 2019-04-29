@@ -80,14 +80,14 @@ app.get('/getwaypoints/:from_long/:from_lat/:to_long/:to_lat', async (req, res)=
                     message:'Invalid Arguments provided!'
                 })
             }else{
-                res.status(400).send({
+                res.status(200).send({
                     route:response.body
                 })
             }
-        })    
-    } catch (error) {
+        })
+    } catch (e) {
         res.status(500).send({
-            error: 'An error occuered!'
+            error: 'An error in fetching waypoints from:!'+_url
         })
     }
 })
