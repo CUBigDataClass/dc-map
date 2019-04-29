@@ -155,9 +155,10 @@ app.get('/getrandomtaxirides/:date', async (req, res, next)=>{
 
 
 app.get('/operationalcabs/:date', async(req, res, next)=>{
-    date = moment(req.params.date)
-    const period = moment({year:date.format('YYYY'), month:date.format('MM')-1}).format('YYYY-MM')
     try{
+      date = moment(req.params.date)
+      const period = moment({year:date.format('YYYY'), month:date.format('MM')-1}).format('YYYY-MM')
+      
       NycLicMedals.find({date:{
           $regex : ".*"+period+".*"
       }}).select({
