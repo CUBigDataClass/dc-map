@@ -158,7 +158,6 @@ app.get('/operationalcabs/:date', async(req, res, next)=>{
     try{
       date = moment(req.params.date)
       const period = moment({year:date.format('YYYY'), month:date.format('MM')-1}).format('YYYY-MM')
-      
       NycLicMedals.find({date:{
           $regex : ".*"+period+".*"
       }}).select({
