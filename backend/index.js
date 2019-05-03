@@ -171,6 +171,11 @@ app.get('/operationalcabs/:date', async(req, res, next)=>{
               period:period,
               results:results
           })
+      }).catch((error)=>{
+          res.status(500).json({
+              msg:"The request failed! Cannot read hte database!",
+              error:error
+          })
       })
     }catch(error){
       res.status(500).json({
@@ -178,5 +183,4 @@ app.get('/operationalcabs/:date', async(req, res, next)=>{
           error:error
       })
     }
-    next();
 })
