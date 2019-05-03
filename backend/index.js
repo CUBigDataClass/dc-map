@@ -179,7 +179,5 @@ app.get('/operationalcabs/:date', async(req, res, next)=>{
           error:error
       })
     }
-
     next();
-
 })
