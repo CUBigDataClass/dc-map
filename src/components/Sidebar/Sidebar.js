@@ -15,9 +15,8 @@ import {
   RangeSlider
 
 } from "@blueprintjs/core"
-import { DateInput, DatePicker, IDateFormatProps, TimePrecision } from "@blueprintjs/datetime";
+import { DatePicker } from "@blueprintjs/datetime";
 import moment from "moment";
-import { Example, handleBooleanChange, handleStringChange, IExampleProps } from "@blueprintjs/docs-theme";
 import {requests} from '../../requests.js'
 import './Sidebar.css'
 
@@ -112,6 +111,12 @@ class Sidebar extends React.Component {
     this.handleValueChange = this.handleValueChange.bind(this)
     this.handleFilterRemove = this.handleFilterRemove.bind(this)
 
+    this.hour = 0
+    this.disableDatePicker = false
+
+    this.visualizePathsByHour = this.visualizePathsByHour.bind(this)
+    this.startVisualization = this.startVisualization.bind(this)
+
   }
 
 
@@ -161,9 +166,28 @@ class Sidebar extends React.Component {
   }
 
   startVisualization(){
-    let newDate = this.state.currentDate.setMinutes(
-      this.state.currentDate.getMinutes() + 60
+    if (this.disableDatePicker){
+      window.alert("wait for current one to finish")
+      return
+    }
+    var latency = 3 // seconds
+    this.disableDatePicker = true
+    this.vizInterval = setInterval(this.visualizePathsByHour, 1000 * latency)
+
+  }
+
+  visualizePathsByHour(){
+    this.hour += 1
+    if( this.hour === 24 ){
+      clearInterval(this.vizInterval)
+      this.disableDatePicker = false
+      this.hour = 0;
+      return
+    }
+    let newDate = this.state.currentDate.setHours(
+      this.state.currentDate.getHours() + 1
     )
+
     this.setState({currentDate: new Date(newDate)})
   }
 
@@ -176,12 +200,7 @@ class Sidebar extends React.Component {
 
   render() {
     const filters = this.state.filters;
-    const jsDateFormatter: IDateFormatProps = {
-    // note that the native implementation of Date functions differs between browsers
-    formatDate: date => date.toLocaleDateString(),
-    parseDate: str => new Date(str),
-    placeholder: "M/D/YYYY",
-};
+
     return (
       <div className="Sidebar">
         <div
@@ -221,6 +240,7 @@ class Sidebar extends React.Component {
               <br/>
               <Tag
                 className="current-time-tag"
+                large={true}
                 fill={true}
               >
                 {
