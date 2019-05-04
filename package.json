@@ -10,6 +10,7 @@
     "axios": "^0.18.0",
     "deck.gl": "^6.4.7",
     "google-trends-api": "^4.9.0",
+    "moment": "^2.24.0",
     "rc-slider": "^8.6.9",
     "react": "^16.8.6",
     "react-compound-slider": "^1.2.1",

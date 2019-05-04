@@ -16,6 +16,17 @@
   visibility: visible;
 }
 
+.tabContainer > div >  .bp3-datepicker {
+  width: 230px;
+  margin: auto;
+}
+
+.tabContainer > div > .bp3-tag {
+  text-align: center;
+  width: 230px;
+  margin: auto;
+}
+
 .tabVisible {
   display: none;
   visibility: hidden;

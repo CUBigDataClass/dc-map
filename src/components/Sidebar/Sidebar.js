@@ -9,25 +9,31 @@ import {
   Elevation,
   Menu,
   Tag,
+  Classes,
   Position,
   MenuItem,
   RangeSlider
 
 } from "@blueprintjs/core"
-
+import { DateInput, DatePicker, IDateFormatProps, TimePrecision } from "@blueprintjs/datetime";
+import moment from "moment";
+import { Example, handleBooleanChange, handleStringChange, IExampleProps } from "@blueprintjs/docs-theme";
 import {requests} from '../../requests.js'
-
 import './Sidebar.css'
+
+const FORMAT_TIME = "dddd, LL LT";
 
 class Sidebar extends React.Component {
 
   constructor(props){
     super(props)
     this.state = {
-      layersIsVisible: !true,
-      filtersIsVisible: !false,
+      layersIsVisible: !false,
+      filtersIsVisible: !true,
       addTrackerIsVisible: false,
-      filters: []
+      selectedDate: new Date(),
+      filters: [],
+      currentDate: new Date()
     }
 
 
@@ -105,6 +111,7 @@ class Sidebar extends React.Component {
     this.handleFilterItemClick = this.handleFilterItemClick.bind(this)
     this.handleValueChange = this.handleValueChange.bind(this)
     this.handleFilterRemove = this.handleFilterRemove.bind(this)
+
   }
 
 
@@ -152,8 +159,29 @@ class Sidebar extends React.Component {
     filters.splice(idx);
     this.setState({filters: filters})
   }
+
+  startVisualization(){
+    let newDate = this.state.currentDate.setMinutes(
+      this.state.currentDate.getMinutes() + 60
+    )
+    this.setState({currentDate: new Date(newDate)})
+  }
+
+  handleDateChange(date: Date) {
+    if (!isSunday(date)) {
+      this.setState({ selectedDate: date, currentDate: date })
+      this.startVisualization()
+    }
+  }
+
   render() {
     const filters = this.state.filters;
+    const jsDateFormatter: IDateFormatProps = {
+    // note that the native implementation of Date functions differs between browsers
+    formatDate: date => date.toLocaleDateString(),
+    parseDate: str => new Date(str),
+    placeholder: "M/D/YYYY",
+};
     return (
       <div className="Sidebar">
         <div
@@ -166,7 +194,7 @@ class Sidebar extends React.Component {
           className="tabButtonContainer"
         >
           <ButtonGroup minimal fill>
-            <Button onClick={this.toggleLayers} icon="layers" />
+            <Button onClick={this.toggleLayers} icon="presentation"/>
             <Button onClick={this.toggleLayers} icon="filter" />
           </ButtonGroup>
         </div>
@@ -179,14 +207,27 @@ class Sidebar extends React.Component {
           }
         >
 
-          <h3 className="bp3-dark bp3-heading">Layers</h3>
-          <Button
-            onClick={this.props.showTrackerFormCallback}
-            intent="primary" className="rect" icon="plus"
-            text="Add Tracker"
-            />
-          <Divider className="dividerBorder"/>
+          <h3 className="bp3-dark bp3-heading">Visualization</h3>
 
+          <Divider className="dividerBorder"/>
+          <br/>
+          <div>
+            <DatePicker
+              modifier={isSunday}
+              className={Classes.ELEVATION_1}
+              onChange={(newDate) => this.handleDateChange(newDate)}
+              value={this.state.selectedDate}
+              />
+              <br/>
+              <Tag
+                className="current-time-tag"
+                fill={true}
+              >
+                {
+                  moment(this.state.currentDate).format(FORMAT_TIME)
+                }
+              </Tag>
+          </div>
         </div>
 
         {
@@ -246,5 +287,7 @@ class Sidebar extends React.Component {
     )
   }
 }
-
+function isSunday(date: Date) {
+  return date.getDay() === 0
+}
 export default Sidebar
