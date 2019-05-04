@@ -82,7 +82,6 @@ const buildAggregationQuery = (params)=>{
     if(keys.includes("date")){
         queries["ride_date"] = params["date"]
     }
-    
     return queries
 }
 

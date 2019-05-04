@@ -59,7 +59,10 @@ app.post('/getridestats', async (req, res) => {
     try{
         NycData[period].aggregate([
             {$match:agg_pipelines},
+            {$match:{$expr:{$ne : ["$PULocationID", "$DOLocationID"]}}},
             {$project:{
+                PULocationID:1,
+                DOLocationID:1,
                 PULocationID_lat: 1, 
                 PULocationID_lon: 1, 
                 DOLocationID_lat:1, 
@@ -94,47 +97,25 @@ app.post('/getridestats', async (req, res) => {
 
 app.get('/getallrides/:date/:hour', async (req, res)=>{
     try {
-        NycGeoData.find({ride_date:req.params.date}).then((response)=>{
-            const idx = random.int(min=0, max=response[0].operational_medals-1)
-            const numPlate = response[0].medallions[idx]
-            NycGeoData[period].find({
-                ride_date:req.params.date,
-                medallion: numPlate
-            }).select({
-                pickup_datetime: 1,
-                dropoff_datetime: 1,
-                passenger_count: 1,
-                trip_time_in_secs: 1,
-                pickup_longitude: 1,
-                pickup_latitude: 1,
-                dropoff_longitude: 1,
-                dropoff_latitude: 1,
-                _id:false
-            }).sort('pickup_datetime').lean().then((rides)=>{
-                helpers.getAllRides(rides, 0, (error, data, statusCode)=>{
-                    if(error){
-                        res.status(statusCode).json({
-                            error:error,
-                            msg:"An error occurred while Calling the API"
-                        })
-                    }else{
-                        res.status(statusCode).json({
-                            rides:data
-                        })
-                    }
-                })
-            }).catch((error)=>{
-                res.status(500).json({
-                    msg:'An error occurred while fetching ride information!',
-                    error:error
-                })
-            })
-        }).catch((error)=>{
-            res.status(500).json({
-                error:error,
-                msg:"An error occured while fetching the rides for the day!"
-            })
-        })
+        NycGeoData.aggregate([
+            {$match:{
+                ride_date:req.param.date, 
+                tpep_pickup_datetime_bin:req.param.date+' '+req.param.hour,
+                tpep_dropoff_datetime_bin:req.param.date+' '+req.param.hour
+            }},
+            {
+                $project:{
+                    PULocationID_lat: 1, 
+                    PULocationID_lon: 1, 
+                    DOLocationID_lat:1, 
+                    DOLocationID_lon:1,
+                    tpep_pickup_datetime_bin:1,
+                    tpep_dropoff_datetime_bin:1,
+                    
+                }
+            }
+        ])
+
     } catch (error) {
         res.json({
             msg : 'An error occurred!',
