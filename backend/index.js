@@ -61,19 +61,10 @@ app.post('/getridestats', async (req, res) => {
             {$match:agg_pipelines},
             {$match:{$expr:{$ne : ["$PULocationID", "$DOLocationID"]}}},
             {$project:{
-                PULocationID:1,
-                DOLocationID:1,
                 PULocationID_lat: 1, 
                 PULocationID_lon: 1, 
                 DOLocationID_lat:1, 
-                DOLocationID_lon:1,
-                tpep_pickup_datetime_bin:1,
-                tpep_dropoff_datetime_bin:1,
-                trip_distance_bin:1,
-                passenger_count:1,
-                fare_amount_bin:1,
-                tip_amount_bin:1,
-                total_amount_bin:1
+                DOLocationID_lon:1
             }}
             // {$sort:{"_id":1}}
         ]).then((result)=>{
