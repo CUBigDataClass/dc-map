@@ -52,7 +52,7 @@ app.get('/getcountday/:fromdatetime/:todatetime', async (req, res, next)=>{
     }
 })
 
-app.post('/getridestats', async (req, res) => {
+app.post('/getrides', async (req, res) => {
     const agg_pipelines = helpers.buildAggregationQuery(req.body)
     const date = moment(req.body.date)
     const period = moment({year:date.format('YYYY'), month:date.format('MM')-1}).format('YYYY-MM')
@@ -61,11 +61,11 @@ app.post('/getridestats', async (req, res) => {
             {$match:agg_pipelines},
             {$match:{$expr:{$ne : ["$PULocationID", "$DOLocationID"]}}},
             {$project:{
-                PULocationID_lat: 1, 
-                PULocationID_lon: 1, 
-                DOLocationID_lat:1, 
-                DOLocationID_lon:1
-            }}
+                _id:0,
+                PULocation : ["$PULocationID_lat", "$PULocationID_lon"],
+                DOLocation : ["$DOLocationID_lat", "$DOLocationID_lon"]
+            }},
+            {$limit : 10},
             // {$sort:{"_id":1}}
         ]).then((result)=>{
             res.status(201).send({
