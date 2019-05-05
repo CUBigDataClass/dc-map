@@ -17,7 +17,6 @@ import {
 } from "@blueprintjs/core"
 import { DatePicker } from "@blueprintjs/datetime";
 import moment from "moment";
-import {requests} from '../../requests.js'
 import './Sidebar.css'
 
 const FORMAT_TIME = "dddd, LL LT";
@@ -129,7 +128,7 @@ class Sidebar extends React.Component {
   }
 
   componentDidMount(){
-    requests.getWaypoints(-73.989, 40.733, -74, 40.733)
+    //requests.getWaypoints(-73.989, 40.733, -74, 40.733)
   }
 
   toggleLayers() {
@@ -178,16 +177,26 @@ class Sidebar extends React.Component {
 
   visualizePathsByHour(){
     this.hour += 1
+    var parent = this
     if( this.hour === 24 ){
       clearInterval(this.vizInterval)
       this.disableDatePicker = false
       this.hour = 0;
       return
     }
+
+    var query = JSON.stringify({
+      "date":"2018-02-01",
+      "pickup-time":{
+        "from": parent.hour,
+        "to": parent.hour+1
+      }
+    })
+    this.props.updateMapDataCallback(1, query)
+
     let newDate = this.state.currentDate.setHours(
       this.state.currentDate.getHours() + 1
     )
-
     this.setState({currentDate: new Date(newDate)})
   }
 

@@ -15,11 +15,14 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      trackerFormisOpen: false
+      trackerFormisOpen: false,
+      mapData: []
     }
 
     this.showTrackerFormCallback = this.showTrackerFormCallback.bind(this)
     this.handleTrackerFormClose = this.handleTrackerFormClose.bind(this)
+    this.updateMapData = this.updateMapData.bind(this)
+
   }
 
   showTrackerFormCallback() {
@@ -35,17 +38,42 @@ class App extends React.Component {
     })
   }
 
+  updateMapData(type, query){
+    console.log(query)
+
+    var parent = this
+
+    fetch('https://dc-map-5214.appspot.com/getridestats', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: query,
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+      parent.setState({mapData: responseJson.results})
+    })
+    .catch((error) => {
+      console.error(error)
+    })
+  }
+
   render() {
 
     return (
       <div style={{clear: "both"}}>
 
         <div className="firstColumn" >
-          <Sidebar showTrackerFormCallback={this.showTrackerFormCallback} />
+          <Sidebar
+            showTrackerFormCallback={this.showTrackerFormCallback}
+            updateMapDataCallback={(type, query) => this.updateMapData(type, query)}
+          />
         </div>
 
         <div className="secondColumn">
-          <MapMain />
+          <MapMain mapData={this.state.mapData} />
         </div>
 
         <Overlay
