@@ -59,7 +59,7 @@ app.post('/getrides', async (req, res) => {
     try{
         NycData[period].aggregate([
             {$match:agg_pipelines},
-            {$match:{$expr:{$ne : ["$PULocationID", "$DOLocationID"]}}},
+            // {$match:{$expr:{$ne : ["$PULocationID", "$DOLocationID"]}}},
             {$project:{
                 _id:0,
                 PULocationID : 1,
