@@ -65,8 +65,8 @@ app.post('/getrides', async (req, res) => {
                 PULocationID : 1,
                 DOLocationID : 1
             }}
-            // {$sort:{"_id":1}}
         ]).then((result)=>{
+
             res.status(201).send({
                 msg:'Success!',
                 results:result
@@ -85,34 +85,61 @@ app.post('/getrides', async (req, res) => {
     }
 })
 
-app.get('/getallrides/:date/:hour', async (req, res)=>{
-    try {
-        NycGeoData.aggregate([
-            {$match:{
-                ride_date:req.param.date, 
-                tpep_pickup_datetime_bin:req.param.date+' '+req.param.hour,
-                tpep_dropoff_datetime_bin:req.param.date+' '+req.param.hour
-            }},
-            {
-                $project:{
-                    PULocationID_lat: 1, 
-                    PULocationID_lon: 1, 
-                    DOLocationID_lat:1, 
-                    DOLocationID_lon:1,
-                    tpep_pickup_datetime_bin:1,
-                    tpep_dropoff_datetime_bin:1,
-                    
-                }
-            }
-        ])
-
-    } catch (error) {
-        res.json({
-            msg : 'An error occurred!',
+app.get('/getrideshistogram/:date', async (req, res)=>{
+    const date = moment(req.body.date)
+    const period = moment({year:date.format('YYYY'), month:date.format('MM')-1}).format('YYYY-MM')
+    try{
+        NycData[period].aggregate([
+            {$match:{ride_date:req.params.date}},
+            {$group:{_id:"$tpep_pickup_datetime_bin", count:{$sum:1}}},
+            {$project:{_id:0, pickupdatetimebin:"$_id", count:1}}
+        ]).then((results)=>{
+            res.status(201).json({
+                msg:"Success!",
+                result:results
+            })
+        }).catch((error)=>{
+            res.status(500).json({
+                msg:"An Error occurred!",
+                error:error
+            })
+        })
+    }catch(error){
+        res.send(500).json({
+            msg:"An error occurred!",
             error:error
         })
     }
 })
+
+// app.get('/getallrides/:date/:hour', async (req, res)=>{
+//     try {
+//         NycGeoData.aggregate([
+//             {$match:{
+//                 ride_date:req.param.date, 
+//                 tpep_pickup_datetime_bin:req.param.date+' '+req.param.hour,
+//                 tpep_dropoff_datetime_bin:req.param.date+' '+req.param.hour
+//             }},
+//             {
+//                 $project:{
+//                     PULocationID_lat: 1, 
+//                     PULocationID_lon: 1, 
+//                     DOLocationID_lat:1, 
+//                     DOLocationID_lon:1,
+//                     tpep_pickup_datetime_bin:1,
+//                     tpep_dropoff_datetime_bin:1,
+                    
+//                 }
+//             }
+//         ])
+
+//     } catch (error) {
+//         res.json({
+//             msg : 'An error occurred!',
+//             error:error
+//         })
+//     }
+// })
 
 app.get('/getzonepickups/:date/:pu_id/:du_id', async (req, res, next)=>{
     date = moment(req.params.date)
