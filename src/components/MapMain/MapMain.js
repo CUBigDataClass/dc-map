@@ -40,9 +40,12 @@ class MapMain extends React.Component{
 
   constructor(props){
       super(props);
+      var ll = location_lookup.map((item) => {
+        return item.lon_lat
+      })
 
       this.state = {
-        location_lookup: [],
+        location_lookup: ll,
         mapData: [],
         elevationScale: elevationScale.min
       }
@@ -64,10 +67,15 @@ class MapMain extends React.Component{
 
 
   componentWillReceiveProps (newProps){
+
     var ll = newProps.mapData.map((item) => {
       var start = item.PULocationID
       var end = item.DOLocationID
       return location_lookup[start-1].lon_lat
+    })
+
+    location_lookup.map((item) => {
+      ll.push(item.lon_lat)
     })
 
     this.setState({
