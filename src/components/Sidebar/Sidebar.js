@@ -2,6 +2,7 @@ import React from 'react'
 
 import {
   ButtonGroup,
+  AnchorButton,
   Button,
   Divider,
   Popover,
@@ -29,9 +30,10 @@ class Sidebar extends React.Component {
       layersIsVisible: !false,
       filtersIsVisible: !true,
       addTrackerIsVisible: false,
-      selectedDate: new Date(),
+      selectedDate: new Date(2018, 0, 1, 0, 0, 0, 0),
       filters: [],
-      currentDate: new Date()
+      currentDate: new Date(2018, 0, 1, 0, 0, 0, 0),
+      disableDatePicker:false
     }
 
 
@@ -104,18 +106,15 @@ class Sidebar extends React.Component {
       }
     ];
 
-    this.toggleLayers = this.toggleLayers.bind(this)
-    this.handleTrackerAdd = this.handleTrackerAdd.bind(this)
-    this.handleFilterItemClick = this.handleFilterItemClick.bind(this)
-    this.handleValueChange = this.handleValueChange.bind(this)
-    this.handleFilterRemove = this.handleFilterRemove.bind(this)
-
-    this.hour = 0
-    this.disableDatePicker = false
-
-    this.visualizePathsByHour = this.visualizePathsByHour.bind(this)
-    this.startVisualization = this.startVisualization.bind(this)
-
+    this._toggleLayers = this._toggleLayers.bind(this)
+    this._handleTrackerAdd = this._handleTrackerAdd.bind(this)
+    this._handleFilterItemClick = this._handleFilterItemClick.bind(this)
+    this._handleValueChange = this._handleValueChange.bind(this)
+    this._handleFilterRemove = this._handleFilterRemove.bind(this)
+    this._incrementHour = this._incrementHour.bind(this)
+    this._decrementHour = this._decrementHour.bind(this)
+    this._visualizePathsByHour = this._visualizePathsByHour.bind(this)
+    this._startVisualization = this._startVisualization.bind(this)
   }
 
 
@@ -131,7 +130,7 @@ class Sidebar extends React.Component {
     //requests.getWaypoints(-73.989, 40.733, -74, 40.733)
   }
 
-  toggleLayers() {
+  _toggleLayers() {
     var layersIsVisible = !this.state.layersIsVisible
     this.setState({
       layersIsVisible: layersIsVisible,
@@ -139,59 +138,58 @@ class Sidebar extends React.Component {
     })
   }
 
-  handleTrackerAdd() {
+  _handleTrackerAdd() {
     var addTrackerVisibility = this.state.addTrackerIsVisible
     this.setState({
       addTrackerIsVisible: !addTrackerVisibility
     })
   }
 
-  handleFilterItemClick(item) {
+  _handleFilterItemClick(item) {
     let filters = this.state.filters;
     filters.push(this.availableFilters[item]);
     this.setState({filters: filters})
   }
 
-  handleValueChange(idx, value) {
+  _handleValueChange(idx, value) {
     let filters = this.state.filters;
     filters[idx].value = value;
     this.setState({filters: filters})
   };
 
-  handleFilterRemove(idx) {
+  _handleFilterRemove(idx) {
     let filters = this.state.filters;
     filters.splice(idx);
     this.setState({filters: filters})
   }
 
-  startVisualization(){
-    if (this.disableDatePicker){
+  _startVisualization(){
+    if (this.state.disableDatePicker){
       window.alert("wait for current one to finish")
       return
     }
-    var latency = 3 // seconds
-    this.disableDatePicker = true
-    this.vizInterval = setInterval(this.visualizePathsByHour, 1000 * latency)
+    var latency = 5 // seconds
+    this.setState({disableDatePicker:true})
+    this.vizInterval = setInterval(this._visualizePathsByHour, 1000 * latency)
 
   }
 
-  visualizePathsByHour(){
-    this.hour += 1
-    var parent = this
-    if( this.hour === 24 ){
+  _visualizePathsByHour(){
+
+    if( this.state.currentDate.getHours() - this.state.selectedDate.getHours() === 23 ){
       clearInterval(this.vizInterval)
-      this.disableDatePicker = false
-      this.hour = 0;
+      this.setState({disableDatePicker:false})
       return
     }
 
     var query = JSON.stringify({
       "date":"2018-02-01",
       "pickup-time":{
-        "from": parent.hour,
-        "to": parent.hour+1
+        "from": this.state.currentDate.getHours(),
+        "to": this.state.currentDate.getHours() + 1
       }
     })
+
     this.props.updateMapDataCallback(1, query)
 
     let newDate = this.state.currentDate.setHours(
@@ -200,11 +198,48 @@ class Sidebar extends React.Component {
     this.setState({currentDate: new Date(newDate)})
   }
 
-  handleDateChange(date: Date) {
+  _handleDateChange(date: Date) {
     if (!isSunday(date)) {
       this.setState({ selectedDate: date, currentDate: date })
-      this.startVisualization()
     }
+  }
+
+  _incrementHour(){
+    var query = JSON.stringify({
+      "date":"2018-02-01",
+      "pickup-time":{
+        "from": this.state.currentDate.getHours(),
+        "to": this.state.currentDate.getHours()+1
+      }
+    })
+
+    let newDate = this.state.currentDate.setHours(
+      this.state.currentDate.getHours() + 1
+    )
+
+    this.props.updateMapDataCallback(1, query)
+
+    this.setState({currentDate: new Date(newDate)})
+
+  }
+
+  _decrementHour(){
+    var query = JSON.stringify({
+      "date":"2018-02-01",
+      "pickup-time":{
+        "from": this.state.currentDate.getHours(),
+        "to": this.state.currentDate.getHours() - 1
+      }
+    })
+
+
+    let newDate = this.state.currentDate.setHours(
+      this.state.currentDate.getHours() - 1
+    )
+
+    this.props.updateMapDataCallback(1, query)
+
+    this.setState({currentDate: new Date(newDate)})
   }
 
   render() {
@@ -221,9 +256,9 @@ class Sidebar extends React.Component {
           }}
           className="tabButtonContainer"
         >
-          <ButtonGroup minimal fill>
-            <Button onClick={this.toggleLayers} icon="presentation"/>
-            <Button onClick={this.toggleLayers} icon="filter" />
+          <ButtonGroup className="bp3-dark" minimal fill>
+            <Button onClick={this._toggleLayers} icon="presentation"/>
+            <Button onClick={this._toggleLayers} icon="filter" />
           </ButtonGroup>
         </div>
         {
@@ -243,19 +278,25 @@ class Sidebar extends React.Component {
             <DatePicker
               modifier={isSunday}
               className={Classes.ELEVATION_1}
-              onChange={(newDate) => this.handleDateChange(newDate)}
-              value={this.state.selectedDate}
+              onChange={(newDate) => this._handleDateChange(newDate)}
+              value={this.state.currentDate}
               />
-              <br/>
-              <Tag
-                className="current-time-tag"
-                large={true}
-                fill={true}
-              >
-                {
-                  moment(this.state.currentDate).format(FORMAT_TIME)
-                }
-              </Tag>
+            <br/>
+            <Tag
+              className="current-time-tag"
+              large={true}
+              fill={true}
+            >
+              {
+                moment(this.state.currentDate).format(FORMAT_TIME)
+              }
+            </Tag>
+            <br/>
+            <ButtonGroup fill={true}>
+                <Button disabled={this.state.disableDatePicker} onClick={()=>this._decrementHour()} icon="chevron-backward" />
+                <Button disabled={this.state.disableDatePicker} onClick={()=>this._startVisualization()} icon="play" />
+                <Button disabled={this.state.disableDatePicker} onClick={()=>this._incrementHour()} icon="chevron-forward" />
+            </ButtonGroup>
           </div>
         </div>
 
@@ -272,7 +313,7 @@ class Sidebar extends React.Component {
               this.availableFilters.map((filter, idx) =>{
                 return <MenuItem
                   icon="graph" text={filter.text}
-                  onClick={()=>this.handleFilterItemClick(idx)}
+                  onClick={()=>this._handleFilterItemClick(idx)}
                 />
               })
             }
@@ -290,7 +331,7 @@ class Sidebar extends React.Component {
                         className="float-left-top"
                         key={idx}
                         fill={true}
-                        onRemove={()=>this.handleFilterRemove(idx)}
+                        onRemove={()=>this._handleFilterRemove(idx)}
                         >
                         {filter.text}
                       </Tag>
@@ -302,7 +343,7 @@ class Sidebar extends React.Component {
                         labelStepSize={filter.lstep}
                         value={filter.value}
                         vertical={false}
-                        onChange={(value)=>this.handleValueChange(idx, value)}
+                        onChange={(value)=>this._handleValueChange(idx, value)}
                       />
                     </Card>
                   )

@@ -39,11 +39,8 @@ class App extends React.Component {
   }
 
   updateMapData(type, query){
-    console.log(query)
-
     var parent = this
-
-    fetch('https://dc-map-5214.appspot.com/getridestats', {
+    fetch('https://dc-map-5214.appspot.com/getrides', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -61,7 +58,6 @@ class App extends React.Component {
   }
 
   render() {
-
     return (
       <div style={{clear: "both"}}>
 

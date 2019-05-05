@@ -27,6 +27,12 @@
   margin: auto;
 }
 
+.tabContainer > div > .bp3-button-group{
+  text-align: center;
+  width: 230px;
+  margin: auto;
+}
+
 .tabVisible {
   display: none;
   visibility: hidden;
