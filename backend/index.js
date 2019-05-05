@@ -62,8 +62,8 @@ app.post('/getrides', async (req, res) => {
             {$match:{$expr:{$ne : ["$PULocationID", "$DOLocationID"]}}},
             {$project:{
                 _id:0,
-                PULocation : ["$PULocationID_lat", "$PULocationID_lon"],
-                DOLocation : ["$DOLocationID_lat", "$DOLocationID_lon"]
+                PULocationID : 1,
+                DOLocationID : 1
             }},
             {$limit : 10},
             // {$sort:{"_id":1}}
