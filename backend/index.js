@@ -86,7 +86,7 @@ app.post('/getrides', async (req, res) => {
 })
 
 app.get('/getrideshistogram/:date', async (req, res)=>{
-    const date = moment(req.body.date)
+    const date = moment(req.params.date)
     const period = moment({year:date.format('YYYY'), month:date.format('MM')-1}).format('YYYY-MM')
     try{
         NycData[period].aggregate([
@@ -105,7 +105,7 @@ app.get('/getrideshistogram/:date', async (req, res)=>{
             })
         })
     }catch(error){
-        res.send(500).json({
+        res.status(500).json({
             msg:"An error occurred!",
             error:error
         })
