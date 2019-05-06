@@ -14,13 +14,13 @@ cleaned_data = cleaned_data.withColumn("fare_amount", cleaned_data["fare_amount"
 cleaned_data = cleaned_data.withColumn("PULocationID", cleaned_data["PULocationID"].cast(DoubleType()))
 cleaned_data = cleaned_data.withColumn("DOLocationID", cleaned_data["DOLocationID"].cast(DoubleType()))
 
-encoder = OneHotEncoderEstimator(inputCols=["PULocationID", "DOLocationID"],
-                                 outputCols=["PULocationIDVec", "DOLocationIDVec"])
-cleaned_onehot_encoded = encoder.fit(cleaned_data)
+encoder = OneHotEncoderEstimator(inputCols=["PULocationID", "DOLocationID"], outputCols=["PULocationIDVec", "DOLocationIDVec"])
+onehotencoder_model = encoder.fit(cleaned_data)
+cleaned_data = onehotencoder_model.transform(cleaned_data)
 
 assembler = VectorAssembler(inputCols=['passenger_count', 'trip_distance', 'RatecodeID', 'PULocationIDVec', 'DOLocationIDVec'],outputCol="features")
 lr = LinearRegression(maxIter=10, regParam=0.3, solver="normal", labelCol="fare_amount")
-lrModel = lr.fit(training)
+lrModel = lr.fit(cleaned_data)
 
 print("Coefficients: %s" % str(lrModel.coefficients))
 print("Intercept: %s" % str(lrModel.intercept))
