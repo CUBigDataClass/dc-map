@@ -1,4 +1,14 @@
 import React from 'react'
+import {
+  BarChart,
+  Bar,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+} from 'recharts'
 
 import {
   ButtonGroup,
@@ -12,6 +22,7 @@ import {
   Tag,
   Classes,
   Position,
+  Intent,
   MenuItem,
   RangeSlider
 
@@ -19,6 +30,9 @@ import {
 import { DatePicker } from "@blueprintjs/datetime";
 import moment from "moment";
 import './Sidebar.css'
+
+import {requests} from '../../requests'
+import {utils} from '../../utils'
 
 const FORMAT_TIME = "dddd, LL LT";
 
@@ -33,7 +47,9 @@ class Sidebar extends React.Component {
       selectedDate: new Date(2018, 0, 1, 0, 0, 0, 0),
       filters: [],
       currentDate: new Date(2018, 0, 1, 0, 0, 0, 0),
-      disableDatePicker:false
+      disableDatePicker:false,
+      activeHistogramIndex: 0,
+      hourlyStats: [{pickupdatetimebin:"2018-01-01 00", count:"0"}]
     }
 
 
@@ -115,6 +131,7 @@ class Sidebar extends React.Component {
     this._decrementHour = this._decrementHour.bind(this)
     this._visualizePathsByHour = this._visualizePathsByHour.bind(this)
     this._startVisualization = this._startVisualization.bind(this)
+    this._handleBarClick = this._handleBarClick.bind(this)
   }
 
 
@@ -127,7 +144,37 @@ class Sidebar extends React.Component {
   }
 
   componentDidMount(){
-    //requests.getWaypoints(-73.989, 40.733, -74, 40.733)
+    var parent = this
+    
+    fetch('https://dc-map-5214.appspot.com/getrideshistogram/'+ utils.getDateString(this.state.currentDate), {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      }
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+      var data = responseJson.result
+      data.sort((a, b)  => {
+        var ka = Number(a.pickupdatetimebin.split(" ")[1])
+        var kb = Number(b.pickupdatetimebin.split(" ")[1])
+        if(ka < kb) return -1;
+        if(ka > kb) return 1;
+        return 0;
+      })
+
+      parent.setState({hourlyStats: data})
+    })
+    .catch((error) => {
+      console.error(error)
+    })
+  }
+
+  _handleBarClick(data, index) {
+  	this.setState({
+    	activeHistogramIndex: index,
+    })
   }
 
   _toggleLayers() {
@@ -169,9 +216,12 @@ class Sidebar extends React.Component {
       return
     }
     var latency = 5 // seconds
-    this.setState({disableDatePicker:true})
-    this.vizInterval = setInterval(this._visualizePathsByHour, 1000 * latency)
 
+    let newDate = this.state.currentDate.setHours(0)
+
+    this.setState({disableDatePicker:true, currentDate: new Date(newDate), activeHistogramIndex: 0})
+
+    this.vizInterval = setInterval(this._visualizePathsByHour, 1000 * latency)
   }
 
   _visualizePathsByHour(){
@@ -195,13 +245,36 @@ class Sidebar extends React.Component {
     let newDate = this.state.currentDate.setHours(
       this.state.currentDate.getHours() + 1
     )
-    this.setState({currentDate: new Date(newDate)})
+    newDate = new Date(newDate)
+    this.setState({currentDate: newDate, activeHistogramIndex: newDate.getHours()})
   }
 
   _handleDateChange(date: Date) {
-    if (!isSunday(date)) {
-      this.setState({ selectedDate: date, currentDate: date })
+    if (this.state.disableDatePicker){
+      window.alert("wait for current one to finish")
+      return
     }
+    fetch('https://dc-map-5214.appspot.com/getrideshistogram/'+ utils.getDateString(date), {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      }
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+      responseJson.result.sort((a, b)  => {
+        var ka = Number(a.pickupdatetimebin.split(" ")[1])
+        var kb = Number(b.pickupdatetimebin.split(" ")[1])
+        if(ka < kb) return -1;
+        if(ka > kb) return 1;
+        return 0;
+      })
+      this.setState({ selectedDate: date, currentDate: date, hourlyStats: responseJson.result })
+    })
+    .catch((error) => {
+      console.error(error)
+    })
   }
 
   _incrementHour(){
@@ -293,10 +366,57 @@ class Sidebar extends React.Component {
             </Tag>
             <br/>
             <ButtonGroup fill={true}>
-                <Button disabled={this.state.disableDatePicker} onClick={()=>this._decrementHour()} icon="chevron-backward" />
-                <Button disabled={this.state.disableDatePicker} onClick={()=>this._startVisualization()} icon="play" />
-                <Button disabled={this.state.disableDatePicker} onClick={()=>this._incrementHour()} icon="chevron-forward" />
+                <Button
+                  disabled={this.state.disableDatePicker}
+                  onClick={()=>this._decrementHour()}
+                  icon="chevron-backward"
+                />
+                <Button
+                  disabled={this.state.disableDatePicker}
+                  onClick={()=>this._startVisualization()}
+                  icon="play"
+                />
+                <Button
+                  disabled={this.state.disableDatePicker}
+                  onClick={()=>this._incrementHour()}
+                  icon="chevron-forward"
+                />
             </ButtonGroup>
+            <br/>
+            <Divider className="dividerBorder"/>
+            <BarChart
+              width={230} height={100}
+              data={this.state.hourlyStats}>
+              <Bar onClick={this._handleBarClick} dataKey="count">
+                {
+                  this.state.hourlyStats.map((entry, index) => (
+                    <Cell
+                      cursor="pointer"
+                      fill={
+                        index === this.state.activeHistogramIndex ? '#1fbad6' : '#6a7485'
+                      }
+                      key={`cell-${index}`}
+                    />
+                  ))
+
+                }
+              </Bar>
+            </BarChart>
+            <br/>
+            <Tag
+              className="current-time-tag"
+              large={true}
+              intent={Intent.PRIMARY}
+              fill={true}
+              >
+              {
+                `${
+                  this.state.hourlyStats[this.state.activeHistogramIndex].pickupdatetimebin
+                }: ${
+                  this.state.hourlyStats[this.state.activeHistogramIndex].count
+                }`
+              }
+            </Tag>
           </div>
         </div>
 

@@ -17,7 +17,8 @@
     "react-compound-slider": "^1.2.1",
     "react-dom": "^16.8.6",
     "react-map-gl": "^4.1.1",
-    "react-scripts": "^3.0.0"
+    "react-scripts": "^3.0.0",
+    "recharts": "^1.5.0"
   },
   "scripts": {
     "start": "react-scripts start",

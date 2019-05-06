@@ -21,16 +21,22 @@
   margin: auto;
 }
 
-.tabContainer > div > .bp3-tag {
-  text-align: center;
-  width: 230px;
-  margin: auto;
+
+span.current-time-tag {
+  text-align: center !important;
+  width: 230px !important;
+  margin: auto !important;
 }
 
 .tabContainer > div > .bp3-button-group{
   text-align: center;
   width: 230px;
   margin: auto;
+}
+
+.tabContainer > div > .recharts-wrapper {
+  margin: auto;
+
 }
 
 .tabVisible {
