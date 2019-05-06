@@ -1,5 +1,5 @@
 import React from 'react'
-import DeckGL, {LineLayer, ArcLayer, ScatterplotLayer, HexagonLayer} from 'deck.gl'
+import DeckGL, { HexagonLayer, TripsLayer} from 'deck.gl'
 import {StaticMap} from 'react-map-gl'
 import GL from '@luma.gl/constants';
 // Set your mapbox access token here
@@ -24,16 +24,6 @@ const colorRange = [
 ];
 const elevationScale = {min: 1, max: 50};
 var location_lookup = require('./location_id_lookup.json')
-
-
-function getColor(d) {
-  return [255 , 13, 255, 255];
-}
-
-
-function getSize(d, sum) {
-  return (d.count/sum)*100;
-}
 
 
 class MapMain extends React.Component{

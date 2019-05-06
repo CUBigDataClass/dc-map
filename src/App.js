@@ -39,7 +39,19 @@ class App extends React.Component {
   }
 
   updateMapData(type, query){
+
     var parent = this
+    var fetchQuery = {}
+
+    if( type === 1){
+      fetchQuery = query
+    }else if ( type === 2 ) {
+      query.map((item) => {
+        console.log(item)
+      })
+
+    }
+    /*
     fetch('https://dc-map-5214.appspot.com/getrides', {
       method: 'POST',
       headers: {
@@ -55,6 +67,7 @@ class App extends React.Component {
     .catch((error) => {
       console.error(error)
     })
+    */
   }
 
   render() {

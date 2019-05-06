@@ -2,17 +2,11 @@ import React from 'react'
 import {
   BarChart,
   Bar,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
+  Cell
 } from 'recharts'
 
 import {
   ButtonGroup,
-  AnchorButton,
   Button,
   Divider,
   Popover,
@@ -27,7 +21,7 @@ import {
   RangeSlider
 
 } from "@blueprintjs/core"
-import { DatePicker } from "@blueprintjs/datetime";
+import { DatePicker, DateInput } from "@blueprintjs/datetime";
 import moment from "moment";
 import './Sidebar.css'
 
@@ -67,10 +61,10 @@ class Sidebar extends React.Component {
         step:1
       },
       {text:"trip-distance",
-        min:0, max:1,
+        min:0, max:50,
         range: true, value:[0, 1],
-        lstep:1,
-        step:0.1
+        lstep:25,
+        step:1
       },
       {text:"passenger-count",
         min:0, max:6,
@@ -145,7 +139,7 @@ class Sidebar extends React.Component {
 
   componentDidMount(){
     var parent = this
-    
+
     fetch('https://dc-map-5214.appspot.com/getrideshistogram/'+ utils.getDateString(this.state.currentDate), {
       method: 'GET',
       headers: {
@@ -193,22 +187,25 @@ class Sidebar extends React.Component {
   }
 
   _handleFilterItemClick(item) {
-    let filters = this.state.filters;
-    filters.push(this.availableFilters[item]);
+    let filters = this.state.filters
+    filters.push(this.availableFilters[item])
+    this.setState({filters: filters})
+  }
+
+  _handleFilterRemove(idx) {
+    let filters = this.state.filters
+    filters.splice(idx, 1)
+    console.log(filters)
     this.setState({filters: filters})
   }
 
   _handleValueChange(idx, value) {
-    let filters = this.state.filters;
-    filters[idx].value = value;
+    let filters = this.state.filters
+    filters[idx].value = value
+    this.props.updateMapDataCallback(2, filters)
+
     this.setState({filters: filters})
   };
-
-  _handleFilterRemove(idx) {
-    let filters = this.state.filters;
-    filters.splice(idx);
-    this.setState({filters: filters})
-  }
 
   _startVisualization(){
     if (this.state.disableDatePicker){
@@ -226,7 +223,7 @@ class Sidebar extends React.Component {
 
   _visualizePathsByHour(){
 
-    if( this.state.currentDate.getHours() - this.state.selectedDate.getHours() === 23 ){
+    if( this.state.currentDate.getHours() - this.state.selectedDate.getHours() === 24 ){
       clearInterval(this.vizInterval)
       this.setState({disableDatePicker:false})
       return
@@ -349,7 +346,6 @@ class Sidebar extends React.Component {
           <br/>
           <div>
             <DatePicker
-              modifier={isSunday}
               className={Classes.ELEVATION_1}
               onChange={(newDate) => this._handleDateChange(newDate)}
               value={this.state.currentDate}
@@ -432,6 +428,7 @@ class Sidebar extends React.Component {
             {
               this.availableFilters.map((filter, idx) =>{
                 return <MenuItem
+                  key={"menu"+idx}
                   icon="graph" text={filter.text}
                   onClick={()=>this._handleFilterItemClick(idx)}
                 />
@@ -446,7 +443,7 @@ class Sidebar extends React.Component {
             {
               filters.map((filter, idx) => {
                   return(
-                    <Card className="bp3-dark margin-top" interactive={true} elevation={Elevation.TWO}>
+                    <Card key={idx} className="bp3-dark margin-top" interactive={true} elevation={Elevation.TWO}>
                       <Tag
                         className="float-left-top"
                         key={idx}
@@ -477,7 +474,5 @@ class Sidebar extends React.Component {
     )
   }
 }
-function isSunday(date: Date) {
-  return date.getDay() === 0
-}
+
 export default Sidebar
