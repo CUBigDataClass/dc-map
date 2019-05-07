@@ -3,7 +3,8 @@ import DeckGL from '@deck.gl/react'
 import {StaticMap, FlyToInterpolator } from 'react-map-gl'
 import {TripsLayer} from '@deck.gl/geo-layers'
 import {HexagonLayer} from '@deck.gl/aggregation-layers'
-import {ArcLayer} from '@deck.gl/layers'
+
+import {PathLayer} from '@deck.gl/layers'
 import {utils} from '../../utils'
 // Set your mapbox access token here
 const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1Ijoia2F1bmlsLWRocnV2IiwiYSI6ImNqdHA3djZhYTAxdmw0YXJ2Nm9nZWZpdTMifQ.i2khisdjFR-fPCZ421loYg';
@@ -158,17 +159,14 @@ class MapMain extends React.Component{
         elevationScale: this.state.elevationScale,
         extruded: true
       }),
-      new ArcLayer({
-        id: 'arc',
+      new PathLayer({
+        id: 'path-layer',
         data: this.state.tripData,
-        getSourcePosition: d => [d.pickup_longitude, d.pickup_latitude, 0],
-        getTargetPosition: d => [d.dropoff_longitude, d.dropoff_latitude, 0],
-        getSourceColor: d => this._isTimeInterval( this.state.currentTime, d.pickup_datetime, d.dropoff_datetime) ? [253, 128, 93]: [23, 184, 190],
-        getTargetColor: d => this._isTimeInterval( this.state.currentTime, d.pickup_datetime, d.dropoff_datetime) ? [253, 128, 93]: [23, 184, 190],
-        getWidth: 5,
+        getPath: d => d.route.routes[0].geometry.coordinates,
+        getColor: d => this._isTimeInterval( this.state.currentTime, d.pickup_datetime, d.dropoff_datetime) ? [253, 128, 93]: [23, 184, 190],
+        getWidth: d => 20,
         updateTriggers: {
-          getTargetColor: this.state.currentTime.getTime(),
-          getSourceColor: this.state.currentTime.getTime()
+          getColor: this.state.currentTime.getTime()
         }
       })
     ]
