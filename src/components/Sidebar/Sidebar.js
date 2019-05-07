@@ -9,19 +9,14 @@ import {
   ButtonGroup,
   Button,
   Divider,
-  Popover,
-  Card,
-  Elevation,
-  Menu,
   Tag,
   Classes,
-  Position,
   Intent,
-  MenuItem,
-  RangeSlider
 
 } from "@blueprintjs/core"
-import { DatePicker, DateInput } from "@blueprintjs/datetime";
+import {
+  DatePicker,
+} from "@blueprintjs/datetime";
 import moment from "moment";
 import './Sidebar.css'
 
@@ -35,92 +30,17 @@ class Sidebar extends React.Component {
   constructor(props){
     super(props)
     this.state = {
-      layersIsVisible: !false,
-      filtersIsVisible: !true,
-      addTrackerIsVisible: false,
+      layersIsVisible: false,
+      filtersIsVisible: true,
       selectedDate: new Date(2018, 0, 1, 0, 0, 0, 0),
-      filters: [],
       currentDate: new Date(2018, 0, 1, 0, 0, 0, 0),
       disableDatePicker:false,
       activeHistogramIndex: 0,
       hourlyStats: [{pickupdatetimebin:"2018-01-01 00", count:"0"}]
     }
 
-
-    this.availableFilters = [
-      {text:"pickup-time",
-        min:0, max:24,
-        range: true, value:[0, 24],
-        lstep:6,
-        step:1
-      },
-      {text:"dropoff-time",
-        min:0, max:24,
-        range: true, value:[0, 24],
-        lstep:6,
-        step:1
-      },
-      {text:"trip-distance",
-        min:0, max:50,
-        range: true, value:[0, 1],
-        lstep:25,
-        step:1
-      },
-      {text:"passenger-count",
-        min:0, max:6,
-        range: true, value:[0, 6],
-        lstep:2,
-        step:1
-      },
-      {text:"pickup-lat",
-        min:77, max:79,
-        range: true, value:[77, 79],
-        lstep:1,
-        step:0.01
-      },
-      {text:"pickup-lon",
-        min:77, max:79,
-        range: true, value:[77, 79],
-        lstep:1,
-        step:0.01
-      },
-      {text:"dropoff-lat",
-        min:77, max:79,
-        range: true, value:[77, 79],
-        lstep:1,
-        step:0.01
-      },
-      {text:"dropoff-lon",
-        min:77, max:79,
-        range: true, value:[77, 79],
-        lstep:1,
-        step:0.01
-      },
-      {text:"fare-amt",
-        min:0, max:500,
-        range: true, value:[0, 500],
-        lstep:100,
-        step:10
-      },
-      {text:"tip-amt",
-        min:0, max:500,
-        range: true, value:[0, 500],
-        lstep:100,
-        step:10
-      },
-      {text:"total-amt",
-        min:0, max:500,
-        range: true, value:[0, 500],
-        lstep:100,
-        step:10
-      }
-    ];
-
     this._toggleLayers = this._toggleLayers.bind(this)
-    this._handleTrackerAdd = this._handleTrackerAdd.bind(this)
-    this._handleFilterItemClick = this._handleFilterItemClick.bind(this)
-    this._handleValueChange = this._handleValueChange.bind(this)
-    this._handleFilterRemove = this._handleFilterRemove.bind(this)
+
     this._incrementHour = this._incrementHour.bind(this)
     this._decrementHour = this._decrementHour.bind(this)
     this._visualizePathsByHour = this._visualizePathsByHour.bind(this)
@@ -128,14 +48,6 @@ class Sidebar extends React.Component {
     this._handleBarClick = this._handleBarClick.bind(this)
   }
 
-
-  onUpdate = update => {
-    this.setState({ update })
-  }
-
-  onChange = values => {
-    this.setState({ values })
-  }
 
   componentDidMount(){
     var parent = this
@@ -179,45 +91,14 @@ class Sidebar extends React.Component {
     })
   }
 
-  _handleTrackerAdd() {
-    var addTrackerVisibility = this.state.addTrackerIsVisible
-    this.setState({
-      addTrackerIsVisible: !addTrackerVisibility
-    })
-  }
-
-  _handleFilterItemClick(item) {
-    let filters = this.state.filters
-    filters.push(this.availableFilters[item])
-    this.setState({filters: filters})
-  }
-
-  _handleFilterRemove(idx) {
-    let filters = this.state.filters
-    filters.splice(idx, 1)
-    console.log(filters)
-    this.setState({filters: filters})
-  }
-
-  _handleValueChange(idx, value) {
-    let filters = this.state.filters
-    filters[idx].value = value
-    this.props.updateMapDataCallback(2, filters)
-
-    this.setState({filters: filters})
-  };
-
   _startVisualization(){
     if (this.state.disableDatePicker){
       window.alert("wait for current one to finish")
       return
     }
     var latency = 5 // seconds
-
     let newDate = this.state.currentDate.setHours(0)
-
     this.setState({disableDatePicker:true, currentDate: new Date(newDate), activeHistogramIndex: 0})
-
     this.vizInterval = setInterval(this._visualizePathsByHour, 1000 * latency)
   }
 
@@ -422,52 +303,8 @@ class Sidebar extends React.Component {
         <div
           className={this.state.layersIsVisible ? "tabContainer tabVisible" : "tabContainer "}
         >
-          <h3 className="bp3-dark bp3-heading">Filters</h3>
-          <Popover content={
-            <Menu>
-            {
-              this.availableFilters.map((filter, idx) =>{
-                return <MenuItem
-                  key={"menu"+idx}
-                  icon="graph" text={filter.text}
-                  onClick={()=>this._handleFilterItemClick(idx)}
-                />
-              })
-            }
-          </Menu>
-          } position={Position.RIGHT_TOP}>
-            <Button intent="primary" className="rect" icon="plus"  text="Add Filter"/>
-          </Popover>
-          <Divider className="dividerBorder"/>
-          <div className="filter-item-contanier">
-            {
-              filters.map((filter, idx) => {
-                  return(
-                    <Card key={idx} className="bp3-dark margin-top" interactive={true} elevation={Elevation.TWO}>
-                      <Tag
-                        className="float-left-top"
-                        key={idx}
-                        fill={true}
-                        onRemove={()=>this._handleFilterRemove(idx)}
-                        >
-                        {filter.text}
-                      </Tag>
-                      <RangeSlider
-                        className="range-slider-style"
-                        min={filter.min}
-                        max={filter.max}
-                        stepSize={filter.step}
-                        labelStepSize={filter.lstep}
-                        value={filter.value}
-                        vertical={false}
-                        onChange={(value)=>this._handleValueChange(idx, value)}
-                      />
-                    </Card>
-                  )
-
-              })
-            }
-          </div>
+          <h3 className="bp3-dark bp3-heading">A day in life</h3>
+          <Button onClick={() => this.props.updateMapDataCallback(2, {})} intent="primary" className="rect" icon="play"  text="Start"/>
         </div>
 
       </div>

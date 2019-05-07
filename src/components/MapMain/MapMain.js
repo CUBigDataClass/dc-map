@@ -1,19 +1,12 @@
 import React from 'react'
-import DeckGL, { HexagonLayer, TripsLayer} from 'deck.gl'
-import {StaticMap} from 'react-map-gl'
-import GL from '@luma.gl/constants';
+import DeckGL from '@deck.gl/react'
+import {ScatterplotLayer, PathLayer} from '@deck.gl/layers'
+import {HexagonLayer} from '@deck.gl/aggregation-layers';
+import {StaticMap, FlyToInterpolator } from 'react-map-gl'
 // Set your mapbox access token here
 const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1Ijoia2F1bmlsLWRocnV2IiwiYSI6ImNqdHA3djZhYTAxdmw0YXJ2Nm9nZWZpdTMifQ.i2khisdjFR-fPCZ421loYg';
 // Initial viewport settings
 // location_lookup : 263 = 262 in array
-const initialViewState = {
-  longitude: -74.00712,
-  latitude: 40.71455,
-  zoom: 10,
-  maxZoom: 16,
-  pitch: 40.5,
-  bearing: -27.396674584323023
-};
 const colorRange = [
   [1, 152, 189],
   [73, 227, 206],
@@ -23,8 +16,8 @@ const colorRange = [
   [209, 55, 78]
 ];
 const elevationScale = {min: 1, max: 50};
-var location_lookup = require('./location_id_lookup.json')
 
+var location_lookup = require('./location_id_lookup.json')
 
 class MapMain extends React.Component{
 
@@ -35,46 +28,65 @@ class MapMain extends React.Component{
       })
 
       this.state = {
+        viewport: {
+          longitude: -74.00712,
+          latitude: 40.71455,
+          zoom: 10,
+          maxZoom: 16,
+          pitch: 40.5,
+          bearing: -27.396674584323023
+        },
         location_lookup: ll,
         mapData: [],
-        elevationScale: elevationScale.min
+        tripData: [],
+        elevationScale: elevationScale.min,
+        time: 0,
+        taxiLocation: [[-73.986022,40.730743], [-73.986022,41.730743]]
       }
 
       this._reset = this._reset.bind(this)
-
 
       this.startAnimationTimer = null;
       this.intervalTimer = null;
 
       this._startAnimate = this._startAnimate.bind(this);
       this._animateHeight = this._animateHeight.bind(this);
+      this._animateTrips = this._animateTrips.bind(this);
   }
 
 
   componentDidMount() {
-    this._animate();
+
+    this._animate()
   }
 
 
   componentWillReceiveProps (newProps){
 
-    var ll = newProps.mapData.map((item) => {
-      var start = item.PULocationID
-      var end = item.DOLocationID
-      return location_lookup[start-1].lon_lat
-    })
+    if (!('rides' in newProps.tripData)){
+      var ll = newProps.mapData.map((item) => {
+        var start = item.PULocationID
+        var end = item.DOLocationID
+        return location_lookup[start-1].lon_lat
+      })
 
-    location_lookup.map((item) => {
-      ll.push(item.lon_lat)
-    })
+      location_lookup.map((item) => {
+        ll.push(item.lon_lat)
+      })
 
-    this.setState({
-      location_lookup: ll,
-      mapData: newProps.mapData,
-      elevationScale: elevationScale.min
-    })
+      this.setState({
+        location_lookup: ll,
+        mapData: newProps.mapData,
+        elevationScale: elevationScale.min
+      })
 
-    this._animate();
+
+
+      this._animate();
+    }else{
+      this.setState({tripData: newProps.tripData}, ()=>
+      {this._animateTrips()})
+    }
   }
 
 
@@ -82,6 +94,26 @@ class MapMain extends React.Component{
     this._stopAnimate();
   }
 
+  _animateTrips(){
+    var tripData = this.state.tripData
+    var taxiHistoy = []
+    for(var i = 0; i < tripData.rides.length; i++){
+      var trip = tripData.rides[i]
+      var tripPath = []
+      if (trip.route.code === "Ok"){
+        for (var j = 0; j < trip.route.routes[0].geometry.coordinates.length-2; j++){
+          tripPath.push(
+              trip.route.routes[0].geometry.coordinates[j]
+          )
+        }
+        taxiHistoy.push(tripPath)
+
+        this.setState({
+          taxiLocation: taxiHistoy
+        })
+      }
+    }
+  }
 
   _reset(location_lookup){
     var ll = location_lookup
@@ -121,6 +153,13 @@ class MapMain extends React.Component{
 
   _renderLayers(){
     return [
+      new PathLayer({
+        id: 'path-layer',
+        data: this.state.taxiLocation,
+        getPath: d => {console.log(d); return d},
+        getColor: d => [255, 24, 123],
+        getWidth: d => 20,
+      }),
       new HexagonLayer({
         id: 'heatmap',
         colorRange: colorRange,
@@ -132,7 +171,7 @@ class MapMain extends React.Component{
         elevationRange: [0, 100],
         elevationScale: this.state.elevationScale,
         extruded: true
-      }),
+      })
     ]
   }
 
@@ -140,13 +179,11 @@ class MapMain extends React.Component{
     return(
 
       <DeckGL
-        initialViewState={initialViewState}
+        viewState={this.state.viewport}
+        onViewStateChange={({ viewState }) => this.setState({ viewport: viewState })}
         controller={true}
         layers={this._renderLayers()}
-        parameters={{
-          blendFunc: [GL.SRC_ALPHA, GL.ONE, GL.ONE_MINUS_DST_ALPHA, GL.ONE],
-          blendEquation: GL.FUNC_ADD
-        }}
+
       >
         <StaticMap
           reuseMaps

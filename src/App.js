@@ -9,6 +9,7 @@ import {
 } from "@blueprintjs/core";
 
 import './App.css'
+var taxiTrip = require('./components/MapMain/day_in_lifetaxi.json')
 
 class App extends React.Component {
 
@@ -16,7 +17,8 @@ class App extends React.Component {
     super(props);
     this.state = {
       trackerFormisOpen: false,
-      mapData: []
+      mapData: [],
+      tripData: []
     }
 
     this.showTrackerFormCallback = this.showTrackerFormCallback.bind(this)
@@ -41,34 +43,45 @@ class App extends React.Component {
   updateMapData(type, query){
 
     var parent = this
-    var fetchQuery = {}
 
     if( type === 1){
-      fetchQuery = query
-    }else if ( type === 2 ) {
-      query.map((item) => {
-        console.log(item)
+      fetch('https://dc-map-5214.appspot.com/getrides', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: query,
       })
+      .then((response) => response.json())
+      .then((responseJson) => {
+        parent.setState({mapData: responseJson.results, tripData:[]})
+      })
+      .catch((error) => {
+        console.error(error)
+      })
+    } else if ( type === 2 ) {
+      /*
+      fetch('https://dc-map-5214.appspot.com/getrandomtaxirides/2013-01-31', {
+        method:'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+      })
+      .then((response) => response.json())
+      .then((responseJson) => {
+          parent.setState({tripData: responseJson})
+      })
+      .catch((error) => {
+        console.error(error)
+      })
+      */
+      parent.setState({tripData: taxiTrip})
 
     }
-    /*
-    fetch('https://dc-map-5214.appspot.com/getrides', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: query,
-    })
-    .then((response) => response.json())
-    .then((responseJson) => {
-      parent.setState({mapData: responseJson.results})
-    })
-    .catch((error) => {
-      console.error(error)
-    })
-    */
   }
+
 
   render() {
     return (
@@ -82,7 +95,7 @@ class App extends React.Component {
         </div>
 
         <div className="secondColumn">
-          <MapMain mapData={this.state.mapData} />
+          <MapMain mapData={this.state.mapData} tripData={this.state.tripData} />
         </div>
 
         <Overlay
@@ -106,5 +119,6 @@ class App extends React.Component {
     );
   }
 }
+
 
 export default App;
