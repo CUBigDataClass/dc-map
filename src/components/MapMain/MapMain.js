@@ -1,8 +1,10 @@
 import React from 'react'
 import DeckGL from '@deck.gl/react'
-import {ScatterplotLayer, PathLayer} from '@deck.gl/layers'
-import {HexagonLayer} from '@deck.gl/aggregation-layers';
 import {StaticMap, FlyToInterpolator } from 'react-map-gl'
+import {TripsLayer} from '@deck.gl/geo-layers'
+import {HexagonLayer} from '@deck.gl/aggregation-layers'
+import {ArcLayer} from '@deck.gl/layers'
+import {utils} from '../../utils'
 // Set your mapbox access token here
 const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1Ijoia2F1bmlsLWRocnV2IiwiYSI6ImNqdHA3djZhYTAxdmw0YXJ2Nm9nZWZpdTMifQ.i2khisdjFR-fPCZ421loYg';
 // Initial viewport settings
@@ -41,17 +43,15 @@ class MapMain extends React.Component{
         tripData: [],
         elevationScale: elevationScale.min,
         time: 0,
-        taxiLocation: [[-73.986022,40.730743], [-73.986022,41.730743]]
+        currentTime: new Date()
       }
-
-      this._reset = this._reset.bind(this)
 
       this.startAnimationTimer = null;
       this.intervalTimer = null;
 
-      this._startAnimate = this._startAnimate.bind(this);
-      this._animateHeight = this._animateHeight.bind(this);
-      this._animateTrips = this._animateTrips.bind(this);
+      this._startAnimate = this._startAnimate.bind(this)
+      this._animateHeight = this._animateHeight.bind(this)
+      this._animateTrips = this._animateTrips.bind(this)
   }
 
 
@@ -62,8 +62,7 @@ class MapMain extends React.Component{
 
 
   componentWillReceiveProps (newProps){
-
-    if (!('rides' in newProps.tripData)){
+    if ((this.state.tripData == newProps.tripData)){
       var ll = newProps.mapData.map((item) => {
         var start = item.PULocationID
         var end = item.DOLocationID
@@ -79,13 +78,18 @@ class MapMain extends React.Component{
         mapData: newProps.mapData,
         elevationScale: elevationScale.min
       })
-
-
-
       this._animate();
     }else{
-      this.setState({tripData: newProps.tripData}, ()=>
-      {this._animateTrips()})
+      var startDate = new Date('2013-01-31')
+      var endDate = new Date(startDate.getTime()+60*60*24*1000)
+
+      this.setState({
+        tripData: newProps.tripData,
+        currentTime: startDate,
+        endTime: endDate
+      })
+
+      this.animateTrips = window.setInterval(this._animateTrips, 1000)
     }
   }
 
@@ -94,41 +98,10 @@ class MapMain extends React.Component{
     this._stopAnimate();
   }
 
-  _animateTrips(){
-    var tripData = this.state.tripData
-    var taxiHistoy = []
-    for(var i = 0; i < tripData.rides.length; i++){
-      var trip = tripData.rides[i]
-      var tripPath = []
-      if (trip.route.code === "Ok"){
-        for (var j = 0; j < trip.route.routes[0].geometry.coordinates.length-2; j++){
-          tripPath.push(
-              trip.route.routes[0].geometry.coordinates[j]
-          )
-        }
-        taxiHistoy.push(tripPath)
-
-        this.setState({
-          taxiLocation: taxiHistoy
-        })
-      }
-    }
-  }
-
-  _reset(location_lookup){
-    var ll = location_lookup
-
-    for(var i = 0; i < ll.length; i++){
-      ll[i].count = 0;
-    }
-    return ll;
-  }
-
-
   _animate(){
     this._stopAnimate();
     // wait 3 secs to start animation so that all data are loaded
-    this.startAnimationTimer = window.setTimeout(this._startAnimate, 100);
+    this.startAnimationTimer = window.setTimeout(this._startAnimate, 1000);
   }
 
 
@@ -142,6 +115,25 @@ class MapMain extends React.Component{
     this.intervalTimer = window.setInterval(this._animateHeight, 20);
   }
 
+  _animateTrips(){
+    if(
+      this.state.currentTime.getTime() < this.state.endTime.getTime()
+    ){
+
+      var currentTime = new Date(this.state.currentTime.getTime()+60*60*1000)
+      this.setState({currentTime: currentTime})
+    }else{
+      window.clearInterval(this.animateTrips)
+    }
+  }
+
+  _isTimeInterval(time, sTime, eTime){
+    var start = utils.getDate(sTime)
+    var end = utils.getDate(eTime)
+
+    return time.getTime() >= start.getTime() && time.getTime() <= end.getTime()
+  }
+
 
   _animateHeight() {
     if (this.state.elevationScale === elevationScale.max) {
@@ -151,15 +143,9 @@ class MapMain extends React.Component{
     }
   }
 
+
   _renderLayers(){
     return [
-      new PathLayer({
-        id: 'path-layer',
-        data: this.state.taxiLocation,
-        getPath: d => {console.log(d); return d},
-        getColor: d => [255, 24, 123],
-        getWidth: d => 20,
-      }),
       new HexagonLayer({
         id: 'heatmap',
         colorRange: colorRange,
@@ -171,6 +157,19 @@ class MapMain extends React.Component{
         elevationRange: [0, 100],
         elevationScale: this.state.elevationScale,
         extruded: true
+      }),
+      new ArcLayer({
+        id: 'arc',
+        data: this.state.tripData,
+        getSourcePosition: d => [d.pickup_longitude, d.pickup_latitude, 0],
+        getTargetPosition: d => [d.dropoff_longitude, d.dropoff_latitude, 0],
+        getSourceColor: d => this._isTimeInterval( this.state.currentTime, d.pickup_datetime, d.dropoff_datetime) ? [253, 128, 93]: [23, 184, 190],
+        getTargetColor: d => this._isTimeInterval( this.state.currentTime, d.pickup_datetime, d.dropoff_datetime) ? [253, 128, 93]: [23, 184, 190],
+        getWidth: 5,
+        updateTriggers: {
+          getTargetColor: this.state.currentTime.getTime(),
+          getSourceColor: this.state.currentTime.getTime()
+        }
       })
     ]
   }

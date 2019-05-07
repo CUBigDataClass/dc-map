@@ -5,6 +5,18 @@ class Utils {
     var year = dateObj.getUTCFullYear()
     return year+'-'+month+'-'+day
   }
+
+  sanitizeTrips(tripData){
+    var filtered = tripData.filter((trip) => {
+      return trip.route.code === "Ok"
+    })
+
+    return filtered
+  }
+
+  getDate(dateString){
+    return new Date(dateString.replace(/-/g,'/'))
+  }
 }
 
 export const utils = new Utils()

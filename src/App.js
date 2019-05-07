@@ -9,7 +9,10 @@ import {
 } from "@blueprintjs/core";
 
 import './App.css'
-var taxiTrip = require('./components/MapMain/day_in_lifetaxi.json')
+import {utils} from './utils'
+
+var taxiTrips = require('./components/MapMain/day_in_lifetaxi.json')
+
 
 class App extends React.Component {
 
@@ -77,7 +80,7 @@ class App extends React.Component {
         console.error(error)
       })
       */
-      parent.setState({tripData: taxiTrip})
+      parent.setState({tripData: utils.sanitizeTrips(taxiTrips.rides)})
 
     }
   }
