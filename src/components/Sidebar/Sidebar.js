@@ -14,6 +14,7 @@ import {
   Intent,
   Spinner
 } from "@blueprintjs/core"
+
 import {
   DatePicker,
 } from "@blueprintjs/datetime";
@@ -125,9 +126,11 @@ class Sidebar extends React.Component {
     let newDate = this.state.currentDate.setHours(
       this.state.currentDate.getHours() + 1
     )
+
     newDate = new Date(newDate)
-    this.props.updateHeatmapCallback(newDate)
-    this.setState({currentDate: new Date(newDate)})
+    this.setState({currentDate: new Date(newDate)}, ()=>{
+      this.props.updateHeatmapCallback(newDate)
+    })
   }
 
   _decrementHour(){

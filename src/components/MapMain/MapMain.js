@@ -61,9 +61,13 @@ class MapMain extends React.Component{
   }
 
 
-  componentWillReceiveProps (newProps){
-    if ((this.state.dayInLifeData == newProps.dayInLifeData)){
-      var ll = newProps.heatmapData.map((item) => {
+  static getDerivedStateFromProps (nextProps, prevState){
+
+    if(
+      nextProps.heatmapData !== prevState.heatmapData &&
+      nextProps.dayInLifeData !== prevState.dayInLifeData
+    ){
+      var ll = nextProps.heatmapData.map((item) => {
         var start = item.PULocationID
         var end = item.DOLocationID
         return location_lookup[start-1].lon_lat
@@ -73,26 +77,58 @@ class MapMain extends React.Component{
         ll.push(item.lon_lat)
       })
 
-      this.setState({
-        location_lookup: ll,
-        heatmapData: newProps.heatmapData,
-        elevationScale: elevationScale.min
-      })
-      this._animate();
-    }else{
       var startDate = new Date('2013-01-31')
       var endDate = new Date(startDate.getTime()+60*60*24*1000)
-      this.setState({
-        dayInLifeData: newProps.dayInLifeData,
+      return {
+        dayInLifeData: nextProps.dayInLifeData,
         currentTime: startDate,
-        endTime: endDate
+        endTime: endDate,
+        location_lookup: ll,
+        heatmapData: nextProps.heatmapData,
+        elevationScale: elevationScale.min
+      }
+
+    } else if(nextProps.heatmapData !== prevState.heatmapData){
+      console.log("only heatmap")
+      var ll = nextProps.heatmapData.map((item) => {
+        var start = item.PULocationID
+        var end = item.DOLocationID
+        return location_lookup[start-1].lon_lat
       })
 
-      this.animateTrips = window.setInterval(this._animateTrips, 1000)
+      location_lookup.map((item) => {
+        ll.push(item.lon_lat)
+      })
+
+      return {
+        location_lookup: ll,
+        heatmapData: nextProps.heatmapData,
+        elevationScale: elevationScale.min
+      }
+    } else if (nextProps.dayInLifeData !== prevState.dayInLifeData){
+      var startDate = new Date('2013-01-31')
+      var endDate = new Date(startDate.getTime()+60*60*24*1000)
+      return {
+        dayInLifeData: nextProps.dayInLifeData,
+        currentTime: startDate,
+        endTime: endDate,
+      }
+
+    } else {
+      return {}
     }
   }
 
+  componentDidUpdate(prevProps, prevState, snapshot){
+    if(prevState.heatmapData !== this.state.heatmapData){
+      this._animate();
+    }
 
+    if (prevState.dayInLifeData !== this.state.dayInLifeData){
+      window.clearInterval(this.animateTrips)
+      this.animateTrips = window.setInterval(this._animateTrips, 1000)
+    }
+  }
   componentWillUnmount() {
     this._stopAnimate()
     clearInterval(this.animateTrips)
