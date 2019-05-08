@@ -18,7 +18,7 @@ const colorRange = [
   [254, 173, 84],
   [209, 55, 78]
 ];
-const elevationScale = {min: 1, max: 50};
+const elevationScale = {min: 0, max: 50};
 
 var location_lookup = require('./location_id_lookup.json')
 
@@ -108,6 +108,7 @@ class MapMain extends React.Component{
     } else if (nextProps.dayInLifeData !== prevState.dayInLifeData){
       var startDate = new Date('2013-01-31')
       var endDate = new Date(startDate.getTime()+60*60*24*1000)
+
       return {
         dayInLifeData: nextProps.dayInLifeData,
         currentTime: startDate,
@@ -125,6 +126,7 @@ class MapMain extends React.Component{
     }
 
     if (prevState.dayInLifeData !== this.state.dayInLifeData){
+      this.props.dayInLifeDateChangeCB(this.state.currentTime)
       window.clearInterval(this.animateTrips)
       this.animateTrips = window.setInterval(this._animateTrips, 1000)
     }
@@ -157,6 +159,8 @@ class MapMain extends React.Component{
     ){
 
       var currentTime = new Date(this.state.currentTime.getTime()+60*60*1000)
+
+      this.props.dayInLifeDateChangeCB(currentTime)
       this.setState({currentTime: currentTime})
     }else{
       window.clearInterval(this.animateTrips)

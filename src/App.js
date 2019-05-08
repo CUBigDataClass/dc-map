@@ -24,7 +24,8 @@ class App extends React.Component {
       heatmapData: [],
       histogramData: [{pickupdatetimebin:"2018-01-01 00", count:"0"}],
       dayInLifeData: [],
-      loading: false
+      loading: false,
+      dayInLifeDate: new Date()
     }
 
     this.updateHeatmapHelper = this.updateHeatmapHelper.bind(this)
@@ -127,6 +128,7 @@ class App extends React.Component {
 
         <div className="firstColumn" >
           <Sidebar
+            dayInLifeDate={this.state.dayInLifeDate}
             histogramData={this.state.histogramData}
             updateHeatmapCallback={(type, query) => this.updateHeatmapHelper(type, query)}
             updateHistogramCallback={(query) => this.updateHistogramHelper(query)}
@@ -144,6 +146,7 @@ class App extends React.Component {
             loading={this.state.loading}
           />
           <MapMain
+            dayInLifeDateChangeCB={(date) => this.setState({dayInLifeDate: date})}
             heatmapData={this.state.heatmapData}
             dayInLifeData={this.state.dayInLifeData}
           />

@@ -39,6 +39,7 @@ class Sidebar extends React.Component {
       filtersIsVisible: !true,
       selectedDate: new Date(2018, 0, 1, 0, 0, 0, 0),
       currentDate: new Date(2018, 0, 1, 0, 0, 0, 0),
+      dayInLifeDate: new Date(),
       disableDatePicker:false,
       activeHistogramIndex: 0,
       histogramData: this.props.histogramData,
@@ -60,10 +61,22 @@ class Sidebar extends React.Component {
   }
 
   componentWillReceiveProps (newProps) {
-    if (newProps.histogramData != this.state.histogramData){
-      this.setState({histogramData: newProps.histogramData})
-    }
-  }
+    if (
+      newProps.histogramData != this.state.histogramData &&
+      newProps.dayInLifeDate !== this.state.dayInLifeDate
+    ){
+      this.setState({
+        histogramData: newProps.histogramData,
+        dayInLifeDate: newProps.dayInLifeDate
+     })
+   }else if(newProps.dayInLifeDate !== this.state.dayInLifeDate){
+      this.setState({dayInLifeDate: newProps.dayInLifeDate})
+   }else if(newProps.histogramData != this.state.histogramData){
+     this.setState({
+       histogramData: newProps.histogramData
+     })
+   }
+ }
 
   _handleHistogramBarClick(data, index) {
   	this.setState({
@@ -258,6 +271,14 @@ class Sidebar extends React.Component {
             onClick={() => this.props.getDayInLifeCallback(this.state.currentDate)}
             intent="primary" className="rect" icon="play"  text="Start"
           />
+          <Tag
+            large={true}
+            fill={true}
+          >
+            {
+              moment(this.state.dayInLifeDate).format(FORMAT_TIME)
+            }
+          </Tag>
         </div>
 
       </div>
