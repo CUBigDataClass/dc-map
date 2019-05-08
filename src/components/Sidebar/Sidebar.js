@@ -12,11 +12,15 @@ import {
   Tag,
   Classes,
   Intent,
-
+  Spinner
 } from "@blueprintjs/core"
 import {
   DatePicker,
 } from "@blueprintjs/datetime";
+
+import { css } from '@emotion/core'
+import { BarLoader } from 'react-spinners'
+
 import moment from "moment";
 import './Sidebar.css'
 
@@ -30,54 +34,37 @@ class Sidebar extends React.Component {
   constructor(props){
     super(props)
     this.state = {
-      layersIsVisible: false,
-      filtersIsVisible: true,
+      layersIsVisible: !false,
+      filtersIsVisible: !true,
       selectedDate: new Date(2018, 0, 1, 0, 0, 0, 0),
       currentDate: new Date(2018, 0, 1, 0, 0, 0, 0),
       disableDatePicker:false,
       activeHistogramIndex: 0,
-      hourlyStats: [{pickupdatetimebin:"2018-01-01 00", count:"0"}]
+      histogramData: this.props.histogramData,
     }
 
     this._toggleLayers = this._toggleLayers.bind(this)
 
     this._incrementHour = this._incrementHour.bind(this)
     this._decrementHour = this._decrementHour.bind(this)
-    this._visualizePathsByHour = this._visualizePathsByHour.bind(this)
-    this._startVisualization = this._startVisualization.bind(this)
-    this._handleBarClick = this._handleBarClick.bind(this)
-  }
 
+    this._visualizeHeatmapByHour = this._visualizeHeatmapByHour.bind(this)
+    this._startHeatmapVisualization = this._startHeatmapVisualization.bind(this)
+
+    this._handleHistogramBarClick = this._handleHistogramBarClick.bind(this)
+  }
 
   componentDidMount(){
-    var parent = this
-
-    fetch('https://dc-map-5214.appspot.com/getrideshistogram/'+ utils.getDateString(this.state.currentDate), {
-      method: 'GET',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      }
-    })
-    .then((response) => response.json())
-    .then((responseJson) => {
-      var data = responseJson.result
-      data.sort((a, b)  => {
-        var ka = Number(a.pickupdatetimebin.split(" ")[1])
-        var kb = Number(b.pickupdatetimebin.split(" ")[1])
-        if(ka < kb) return -1;
-        if(ka > kb) return 1;
-        return 0;
-      })
-
-      parent.setState({hourlyStats: data})
-    })
-    .catch((error) => {
-      console.error(error)
-    })
+    this.props.updateHistogramCallback(this.state.currentDate)
   }
 
-  _handleBarClick(data, index) {
+  componentWillReceiveProps (newProps) {
+    if (newProps.histogramData != this.state.histogramData){
+      this.setState({histogramData: newProps.histogramData})
+    }
+  }
+
+  _handleHistogramBarClick(data, index) {
   	this.setState({
     	activeHistogramIndex: index,
     })
@@ -91,18 +78,22 @@ class Sidebar extends React.Component {
     })
   }
 
-  _startVisualization(){
+  _startHeatmapVisualization(){
     if (this.state.disableDatePicker){
       window.alert("wait for current one to finish")
       return
     }
     var latency = 5 // seconds
     let newDate = this.state.currentDate.setHours(0)
-    this.setState({disableDatePicker:true, currentDate: new Date(newDate), activeHistogramIndex: 0})
-    this.vizInterval = setInterval(this._visualizePathsByHour, 1000 * latency)
+    this.setState({
+      disableDatePicker:true,
+      currentDate: new Date(newDate),
+      activeHistogramIndex: 0
+    })
+    this.vizInterval = setInterval(this._visualizeHeatmapByHour, 1000 * latency)
   }
 
-  _visualizePathsByHour(){
+  _visualizeHeatmapByHour(){
 
     if( this.state.currentDate.getHours() - this.state.selectedDate.getHours() === 24 ){
       clearInterval(this.vizInterval)
@@ -110,15 +101,8 @@ class Sidebar extends React.Component {
       return
     }
 
-    var query = JSON.stringify({
-      "date":"2018-02-01",
-      "pickup-time":{
-        "from": this.state.currentDate.getHours(),
-        "to": this.state.currentDate.getHours() + 1
-      }
-    })
 
-    this.props.updateMapDataCallback(1, query)
+    this.props.updateHeatmapCallback(this.state.currentDate)
 
     let newDate = this.state.currentDate.setHours(
       this.state.currentDate.getHours() + 1
@@ -132,64 +116,26 @@ class Sidebar extends React.Component {
       window.alert("wait for current one to finish")
       return
     }
-    fetch('https://dc-map-5214.appspot.com/getrideshistogram/'+ utils.getDateString(date), {
-      method: 'GET',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      }
-    })
-    .then((response) => response.json())
-    .then((responseJson) => {
-      responseJson.result.sort((a, b)  => {
-        var ka = Number(a.pickupdatetimebin.split(" ")[1])
-        var kb = Number(b.pickupdatetimebin.split(" ")[1])
-        if(ka < kb) return -1;
-        if(ka > kb) return 1;
-        return 0;
-      })
-      this.setState({ selectedDate: date, currentDate: date, hourlyStats: responseJson.result })
-    })
-    .catch((error) => {
-      console.error(error)
-    })
+    this.props.updateHistogramCallback(date)
+    this.setState({ selectedDate: date, currentDate: date})
   }
 
   _incrementHour(){
-    var query = JSON.stringify({
-      "date":"2018-02-01",
-      "pickup-time":{
-        "from": this.state.currentDate.getHours(),
-        "to": this.state.currentDate.getHours()+1
-      }
-    })
 
     let newDate = this.state.currentDate.setHours(
       this.state.currentDate.getHours() + 1
     )
-
-    this.props.updateMapDataCallback(1, query)
-
+    newDate = new Date(newDate)
+    this.props.updateHeatmapCallback(newDate)
     this.setState({currentDate: new Date(newDate)})
-
   }
 
   _decrementHour(){
-    var query = JSON.stringify({
-      "date":"2018-02-01",
-      "pickup-time":{
-        "from": this.state.currentDate.getHours(),
-        "to": this.state.currentDate.getHours() - 1
-      }
-    })
-
-
     let newDate = this.state.currentDate.setHours(
       this.state.currentDate.getHours() - 1
     )
-
-    this.props.updateMapDataCallback(1, query)
-
+    newDate = new Date(newDate)
+    this.props.updateHeatmapCallback(newDate)
     this.setState({currentDate: new Date(newDate)})
   }
 
@@ -250,7 +196,7 @@ class Sidebar extends React.Component {
                 />
                 <Button
                   disabled={this.state.disableDatePicker}
-                  onClick={()=>this._startVisualization()}
+                  onClick={()=>this._startHeatmapVisualization()}
                   icon="play"
                 />
                 <Button
@@ -261,12 +207,13 @@ class Sidebar extends React.Component {
             </ButtonGroup>
             <br/>
             <Divider className="dividerBorder"/>
+
             <BarChart
               width={230} height={100}
-              data={this.state.hourlyStats}>
-              <Bar onClick={this._handleBarClick} dataKey="count">
+              data={this.state.histogramData}>
+              <Bar onClick={()=>this._handleHistogramBarClick()} dataKey="count">
                 {
-                  this.state.hourlyStats.map((entry, index) => (
+                  this.state.histogramData.map((entry, index) => (
                     <Cell
                       cursor="pointer"
                       fill={
@@ -288,9 +235,9 @@ class Sidebar extends React.Component {
               >
               {
                 `${
-                  this.state.hourlyStats[this.state.activeHistogramIndex].pickupdatetimebin
+                  this.state.histogramData[this.state.activeHistogramIndex].pickupdatetimebin
                 }: ${
-                  this.state.hourlyStats[this.state.activeHistogramIndex].count
+                  this.state.histogramData[this.state.activeHistogramIndex].count
                 }`
               }
             </Tag>
@@ -304,7 +251,10 @@ class Sidebar extends React.Component {
           className={this.state.layersIsVisible ? "tabContainer tabVisible" : "tabContainer "}
         >
           <h3 className="bp3-dark bp3-heading">A day in life</h3>
-          <Button onClick={() => this.props.updateMapDataCallback(2, {})} intent="primary" className="rect" icon="play"  text="Start"/>
+          <Button
+            onClick={() => this.props.getDayInLifeCallback(this.state.currentDate)}
+            intent="primary" className="rect" icon="play"  text="Start"
+          />
         </div>
 
       </div>

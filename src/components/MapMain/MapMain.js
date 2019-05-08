@@ -40,8 +40,8 @@ class MapMain extends React.Component{
           bearing: -27.396674584323023
         },
         location_lookup: ll,
-        mapData: [],
-        tripData: [],
+        heatmapData: this.props.heatmapData,
+        dayInLifeData: this.props.dayInLifeData,
         elevationScale: elevationScale.min,
         time: 0,
         currentTime: new Date()
@@ -57,14 +57,13 @@ class MapMain extends React.Component{
 
 
   componentDidMount() {
-
     this._animate()
   }
 
 
   componentWillReceiveProps (newProps){
-    if ((this.state.tripData == newProps.tripData)){
-      var ll = newProps.mapData.map((item) => {
+    if ((this.state.dayInLifeData == newProps.dayInLifeData)){
+      var ll = newProps.heatmapData.map((item) => {
         var start = item.PULocationID
         var end = item.DOLocationID
         return location_lookup[start-1].lon_lat
@@ -76,16 +75,15 @@ class MapMain extends React.Component{
 
       this.setState({
         location_lookup: ll,
-        mapData: newProps.mapData,
+        heatmapData: newProps.heatmapData,
         elevationScale: elevationScale.min
       })
       this._animate();
     }else{
       var startDate = new Date('2013-01-31')
       var endDate = new Date(startDate.getTime()+60*60*24*1000)
-
       this.setState({
-        tripData: newProps.tripData,
+        dayInLifeData: newProps.dayInLifeData,
         currentTime: startDate,
         endTime: endDate
       })
@@ -96,7 +94,8 @@ class MapMain extends React.Component{
 
 
   componentWillUnmount() {
-    this._stopAnimate();
+    this._stopAnimate()
+    clearInterval(this.animateTrips)
   }
 
   _animate(){
@@ -161,9 +160,11 @@ class MapMain extends React.Component{
       }),
       new PathLayer({
         id: 'path-layer',
-        data: this.state.tripData,
+        data: this.state.dayInLifeData,
         getPath: d => d.route.routes[0].geometry.coordinates,
-        getColor: d => this._isTimeInterval( this.state.currentTime, d.pickup_datetime, d.dropoff_datetime) ? [253, 128, 93]: [23, 184, 190],
+        getColor: d => this._isTimeInterval(
+          this.state.currentTime, d.pickup_datetime, d.dropoff_datetime
+        ) ? [253, 128, 93]: [23, 184, 190],
         getWidth: d => 20,
         updateTriggers: {
           getColor: this.state.currentTime.getTime()

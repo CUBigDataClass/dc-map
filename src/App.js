@@ -8,6 +8,8 @@ import {
   Card, Button
 } from "@blueprintjs/core";
 
+import { css } from '@emotion/core'
+import { BarLoader } from 'react-spinners'
 import './App.css'
 import {utils} from './utils'
 
@@ -19,105 +21,133 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      trackerFormisOpen: false,
-      mapData: [],
-      tripData: []
+      heatmapData: [],
+      histogramData: [{pickupdatetimebin:"2018-01-01 00", count:"0"}],
+      dayInLifeData: [],
+      loading: false
     }
 
-    this.showTrackerFormCallback = this.showTrackerFormCallback.bind(this)
-    this.handleTrackerFormClose = this.handleTrackerFormClose.bind(this)
-    this.updateMapData = this.updateMapData.bind(this)
+    this.updateHeatmapHelper = this.updateHeatmapHelper.bind(this)
+    this.updateHistogramHelper = this.updateHistogramHelper.bind(this)
 
+    this.updateData = this.updateData.bind(this)
   }
 
-  showTrackerFormCallback() {
-    var _trackerFormisOpen = this.state.trackerFormisOpen
-    this.setState({
-      trackerFormisOpen: !_trackerFormisOpen
-    })
+  updateData(date){
+    this.setState({loading: true})
   }
 
-  handleTrackerFormClose() {
-    this.setState({
-      trackerFormisOpen: false
-    })
-  }
 
-  updateMapData(type, query){
-
+  updateHistogramHelper(date){
+    this.setState({loading: true})
     var parent = this
+    var dateString = utils.getDateString(date)
+    fetch('https://dc-map-5214.appspot.com/getrideshistogram/' + dateString, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      }
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+      var data = responseJson.result
+      data.sort((a, b)  => {
+       var ka = Number(a.pickupdatetimebin.split(" ")[1])
+       var kb = Number(b.pickupdatetimebin.split(" ")[1])
+       if(ka < kb) return -1;
+       if(ka > kb) return 1;
+       return 0;
+      })
 
-    if( type === 1){
-      fetch('https://dc-map-5214.appspot.com/getrides', {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: query,
-      })
-      .then((response) => response.json())
-      .then((responseJson) => {
-        parent.setState({mapData: responseJson.results, tripData:[]})
-      })
-      .catch((error) => {
-        console.error(error)
-      })
-    } else if ( type === 2 ) {
-      /*
-      fetch('https://dc-map-5214.appspot.com/getrandomtaxirides/2013-01-31', {
-        method:'GET',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-      })
-      .then((response) => response.json())
-      .then((responseJson) => {
-          parent.setState({tripData: responseJson})
-      })
-      .catch((error) => {
-        console.error(error)
-      })
-      */
-      parent.setState({tripData: utils.sanitizeTrips(taxiTrips.rides)})
-
-    }
+      parent.setState({histogramData: data, loading: false})
+    })
+    .catch((error) => {
+      console.error(error)
+    })
   }
+
+  updateHeatmapHelper(date){
+    this.setState({loading: true})
+    var parent = this
+    var query = JSON.stringify({
+      "date":date.toISOString().split("T")[0],
+      "pickup-time":{
+        "from": date.getHours(),
+        "to": date.getHours() + 1
+      }
+    })
+
+    fetch('https://dc-map-5214.appspot.com/getrides', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: query,
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+      parent.setState({
+        loading: false,
+        heatmapData: responseJson.results
+      })
+    })
+    .catch((error) => {
+      console.error(error)
+    })
+  }
+
+  getDayInLife(date){
+    var parent = this
+    this.setState({loading: true})
+
+    fetch('https://dc-map-5214.appspot.com/getrandomtaxirides/2013-01-31', {
+      method:'GET',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+      parent.setState({loading: false, dayInLifeData: utils.sanitizeTrips(responseJson.rides)})
+    })
+    .catch((error) => {
+      console.error(error)
+    })
+  }
+
+
 
 
   render() {
     return (
-      <div style={{clear: "both"}}>
+      <div style={{clear: "both" }}>
 
         <div className="firstColumn" >
           <Sidebar
-            showTrackerFormCallback={this.showTrackerFormCallback}
-            updateMapDataCallback={(type, query) => this.updateMapData(type, query)}
+            histogramData={this.state.histogramData}
+            updateHeatmapCallback={(type, query) => this.updateHeatmapHelper(type, query)}
+            updateHistogramCallback={(query) => this.updateHistogramHelper(query)}
+            updateDataCallback={(date) => this.updateData(date)}
+            getDayInLifeCallback={(date) => this.getDayInLife(date)}
           />
         </div>
 
         <div className="secondColumn">
-          <MapMain mapData={this.state.mapData} tripData={this.state.tripData} />
+          <BarLoader
+            css={{"zIndex": 1}}
+            sizeUnit={"px"}
+            width={2000}
+            color={'#36D7B7'}
+            loading={this.state.loading}
+          />
+          <MapMain
+            heatmapData={this.state.heatmapData}
+            dayInLifeData={this.state.dayInLifeData}
+          />
         </div>
-
-        <Overlay
-          isOpen={this.state.trackerFormisOpen}
-          className={Classes.OVERLAY_SCROLL_CONTAINER}
-          canOutsideClickClose={true}
-          usePortal={true}
-          onClose={this.handleTrackerFormClose}
-        >
-          <Card
-            elevation={4}
-            interactive={true}
-            className="centerOverlay bp3-dark"
-          >
-            <h5><a href="http://google.com">Card heading</a></h5>
-            <p>Card content</p>
-            <Button>Submit</Button>
-          </Card>
-        </Overlay>
       </div>
     );
   }
