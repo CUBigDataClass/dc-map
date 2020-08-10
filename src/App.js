@@ -43,7 +43,7 @@ class App extends React.Component {
     this.setState({loading: true})
     var parent = this
     var dateString = utils.getDateString(date)
-    fetch('https://dc-map-5214.appspot.com/getrideshistogram/' + dateString, {
+    fetch('http://3.17.164.73:3000/getrideshistogram/' + dateString, {
       method: 'GET',
       headers: {
         Accept: 'application/json',
@@ -79,7 +79,7 @@ class App extends React.Component {
       }
     })
 
-    fetch('https://dc-map-5214.appspot.com/getrides', {
+    fetch('http://3.17.164.73:3000/getrides', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -103,7 +103,7 @@ class App extends React.Component {
     var parent = this
     this.setState({loading: true})
 
-    fetch('https://dc-map-5214.appspot.com/getrandomtaxirides/2013-01-31', {
+    fetch('http://3.17.164.73:3000/getrandomtaxirides/2013-01-31', {
       method:'GET',
       headers: {
         Accept: 'application/json',
