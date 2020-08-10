@@ -3,3 +3,4 @@ backend/node_modules/
 backend/package-lock.json
 backend/scratchpad.js
 backend/mongo_commands.txt
+backend/app.yaml
