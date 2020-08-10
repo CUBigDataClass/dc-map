@@ -58,13 +58,13 @@ const NycDataSchema = {
     },
     PULocationID_lat:{
         type:Number
-    }, 
+    },
     PULocationID_lon: {
         type:Number
-    }, 
+    },
     DOLocationID_lat:{
         type:Number
-    }, 
+    },
     DOLocationID_lon:{
         type:Number
     },
@@ -73,18 +73,6 @@ const NycDataSchema = {
     },
     tpep_dropoff_datetime_bin:{
         type:String
-    },
-    trip_distance_bin:{
-        type:Number
-    },
-    fare_amount_bin:{
-        type:Number
-    },
-    tip_amount_bin:{
-        type:Number
-    },
-    total_amount_bin:{
-        type:Number
     }
 }
 
